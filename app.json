@@ -38,12 +38,20 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/Inter_18pt-Bold.ttf"]
+          "fonts": [
+            "./assets/fonts/Inter_18pt-Bold.ttf"
+          ]
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b55c0bd6-5d69-4e24-8045-679063ce35e1"
+      }
     }
   }
 }
