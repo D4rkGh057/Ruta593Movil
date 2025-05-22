@@ -10,7 +10,7 @@ export default function Index() {
           style={{ width: 280, height: 93 }}
         />
       </View>
-        <Text className="text-base font-bold text-black mt-2 text-center">
+        <Text style={{ fontFamily: 'Inter', fontWeight: '700' }} className="text-base font-bold text-black mt-2 text-center">
           Viajes Óptimos, Horarios Útiles y Eficientes
         </Text>
       </View>
