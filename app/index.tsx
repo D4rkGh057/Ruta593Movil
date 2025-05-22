@@ -1,6 +1,8 @@
+import { useRouter } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 export default function Index() {
+  const router = useRouter();
   return (
     <View className="flex-1 bg-white justify-center items-center px-6">
       <View className="w-full justify-center mt-8">
@@ -17,12 +19,12 @@ export default function Index() {
       <View className="flex-1 justify-center items-center w-full">
         <Image
           source={require('../assets/images/mountain.png')}
-          style={{ width: 220, height: 95, resizeMode: 'contain' }}
+          className="w-280 h-93 bg-contain"
         />
       </View>
       <TouchableOpacity
         className="w-full max-w-xs bg-yellow-300 rounded-xl py-4 mb-12 items-center"
-        onPress={() => console.log('Reservar Ya')}
+        onPress={() => router.push('/login')}
         activeOpacity={0.8}
       >
         <Text className="text-black text-lg font-bold">Reservar Ya</Text>
