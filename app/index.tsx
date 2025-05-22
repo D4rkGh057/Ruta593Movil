@@ -1,10 +1,11 @@
 import { useRouter } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const router = useRouter();
   return (
-    <View className="flex-1 bg-white justify-center items-center px-6">
+    <SafeAreaView className="flex-1 bg-white justify-center items-center px-6">
       <View className="w-full justify-center mt-8">
         <View className="ml-12">
         <Image
@@ -12,7 +13,7 @@ export default function Index() {
           style={{ width: 280, height: 93 }}
         />
       </View>
-        <Text style={{ fontFamily: 'Inter', fontWeight: '700' }} className="text-base font-bold text-black mt-2 text-center">
+        <Text style={{ fontFamily: 'Inter' }} className="text-base text-black mt-2 text-center">
           Viajes Óptimos, Horarios Útiles y Eficientes
         </Text>
       </View>
@@ -27,8 +28,8 @@ export default function Index() {
         onPress={() => router.push('/login')}
         activeOpacity={0.8}
       >
-        <Text className="text-black text-lg font-bold">Reservar Ya</Text>
+        <Text className="text-black text-lg" style={{ fontFamily: 'Inter' }}>Reservar Ya</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }
