@@ -42,7 +42,8 @@
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17",
     "zustand": "^5.0.5",
-    "@react-native-async-storage/async-storage": "2.1.2"
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/datetimepicker": "8.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
