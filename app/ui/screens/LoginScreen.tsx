@@ -1,52 +1,80 @@
-import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Feather } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 export default function LoginScreen() {
-  const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState('');
+    const router = useRouter();
+    const [showPassword, setShowPassword] = useState(false);
+    const [password, setPassword] = useState("");
 
-  return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "android" ? "height" : "padding"}
-      style={{ flex: 1 }}
-    >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 justify-center items-center p-5 bg-white">
-          <Image source={require('../../../assets/images/mountain.png')} className="w-280 h-93 mb-12" />
-          <Image source={require('../../../assets/images/ruta593.png')} className="w-280 h-93 mb-12" />
-          <TextInput
-            className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
-            placeholder="Ingresa tu Correo"
-            placeholderTextColor="#9ca3af"
-          />
-          <View className="w-80 h-14 border border-gray-300 rounded-xl mb-2 flex-row items-center px-4">
-            <TextInput
-              className="flex-1 text-black"
-              placeholder="Ingresa tu Contraseña"
-              placeholderTextColor="#9ca3af"
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Feather name={showPassword ? 'eye' : 'eye-off'} size={20} color="#6b7280" />
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity className="self-end mb-5">
-            <Text className="text-blue-800" style={{ fontFamily: 'Inter' }}>¿Olvidaste tu contraseña?</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="w-56 h-14 bg-yellow-400 justify-center items-center rounded-xl mb-5" onPress={() => router.push('/home')}>
-            <Text className="text-black" style={{ fontFamily: 'Inter' }}>Iniciar Sesión</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="mt-5" >
-            <Text className="text-blue-800" style={{ fontFamily: 'Inter' }}>¿Aún no te registras? Crea una Cuenta</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  );
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "android" ? "height" : "padding"}
+            style={{ flex: 1 }}
+        >
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                <View className="flex-1 justify-center items-center p-5 bg-white">
+                    <Image
+                        source={require("../../../assets/images/mountain.png")}
+                        className="w-280 h-93 mb-12"
+                    />
+                    <Image
+                        source={require("../../../assets/images/ruta593.png")}
+                        className="w-280 h-93 mb-12"
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Ingresa tu Correo"
+                        placeholderTextColor="#9ca3af"
+                    />
+                    <View className="w-80 h-14 border border-gray-300 rounded-xl mb-2 flex-row items-center px-4">
+                        <TextInput
+                            className="flex-1 text-black"
+                            placeholder="Ingresa tu Contraseña"
+                            placeholderTextColor="#9ca3af"
+                            secureTextEntry={!showPassword}
+                            value={password}
+                            onChangeText={setPassword}
+                            autoCapitalize="none"
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                            <Feather
+                                name={showPassword ? "eye" : "eye-off"}
+                                size={20}
+                                color="#6b7280"
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity className="self-end mb-5">
+                        <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
+                            ¿Olvidaste tu contraseña?
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className="w-56 h-14 bg-yellow-400 justify-center items-center rounded-xl mb-5"
+                        onPress={() => router.push("/home")}
+                    >
+                        <Text className="text-black" style={{ fontFamily: "Inter" }}>
+                            Iniciar Sesión
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity className="mt-5">
+                        <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
+                            ¿Aún no te registras? Crea una Cuenta
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
+    );
 }
