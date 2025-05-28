@@ -2,7 +2,7 @@ import { useFonts } from "expo-font";
 import React, { useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
-import TabNavigator from "./ui/components/navigation/TabNavigator";
+import TabNavigator from "./ui/navigation/TabNavigator";
 import LoginScreen from "./ui/screens/LoginScreen";
 
 export default function RootLayout() {
