@@ -1,21 +1,25 @@
-import { useFonts } from 'expo-font';
-import { Stack } from "expo-router";
+import { useFonts } from "expo-font";
+import React, { useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
+import TabNavigator from "./ui/navigation/TabNavigator";
+import LoginScreen from "./ui/screens/LoginScreen";
+
 export default function RootLayout() {
-
-   const [fontsLoaded] = useFonts({
-      'Inter': require('../assets/fonts/Inter_18pt-Bold.ttf'),
-      // Agrega más fuentes si es necesario
+    const [fontsLoaded] = useFonts({
+        Inter: require("../assets/fonts/Inter_18pt-Bold.ttf"),
     });
-  
-    if (!fontsLoaded) {
-      return null;
-    }
-  
+    const [logueado, setLogueado] = useState(false);
 
-  return <Stack screenOptions={
-    {
-      headerShown: false,
-    }
-  }/>;
+    if (!fontsLoaded) return null;
+
+    return (
+        <SafeAreaProvider>
+            {logueado ? (
+                <TabNavigator />
+            ) : (
+                <LoginScreen onLogin={() => setLogueado(true)} />
+            )}
+        </SafeAreaProvider>
+    );
 }

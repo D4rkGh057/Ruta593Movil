@@ -1,15 +1,19 @@
 // app/adapters/stores/authStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { LoginUseCase } from '../../core/application/LoginUseCase';
 import { User } from '../../core/domain/User';
+import { AuthApiAdapter } from '../../core/infrastructure/AuthApiAdapter';
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  loginWithCredentials: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
+
+const loginUseCase = new LoginUseCase(new AuthApiAdapter());
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -18,12 +22,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      login: (user, token) =>
-        set({
-          user,
-          token,
-          isAuthenticated: true,
-        }),
+      loginWithCredentials: async (email, password) => {
+        const { user, token } = await loginUseCase.execute(email, password);
+        set({ user, token, isAuthenticated: true });
+      },
 
       logout: () =>
         set({
