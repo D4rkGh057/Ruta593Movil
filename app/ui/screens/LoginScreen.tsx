@@ -11,11 +11,26 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useAuthStore } from "../../adapters/stores/authStore";
 
-export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
+export default function LoginScreen({ onLogin }: Readonly<{ onLogin?: () => void }>) {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const loginWithCredentials = useAuthStore((state) => state.loginWithCredentials);
+
+    const handleLogin = async () => {
+        setError(null);
+        try {
+            await loginWithCredentials(email, password);
+            if (onLogin) onLogin();
+            else router.replace("/home");
+        } catch (e: any) {
+            setError(e.message ?? "Error al iniciar sesión");
+        }
+    };
 
     return (
         <KeyboardAvoidingView
@@ -42,6 +57,9 @@ export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
                         className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
                         placeholder="Ingresa tu Correo"
                         placeholderTextColor="#9ca3af"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
                     />
                     <View className="w-80 h-14 border border-gray-300 rounded-xl mb-2 flex-row items-center px-4">
                         <TextInput
@@ -61,6 +79,9 @@ export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
                             />
                         </TouchableOpacity>
                     </View>
+                    {error && (
+                        <Text className="text-red-500 mb-2">{error}</Text>
+                    )}
                     <TouchableOpacity className="self-end mb-5">
                         <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
                             ¿Olvidaste tu contraseña?
@@ -68,7 +89,7 @@ export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="w-56 h-14 bg-yellow-400 justify-center items-center rounded-xl mb-5"
-                        onPress={onLogin}
+                        onPress={handleLogin}
                     >
                         <Text className="text-black" style={{ fontFamily: "Inter" }}>
                             Iniciar Sesión

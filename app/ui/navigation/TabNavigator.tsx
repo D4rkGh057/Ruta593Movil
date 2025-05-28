@@ -2,11 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AyudaScreen from '../../screens/AyudaScreen';
-import BoletosScreen from '../../screens/BoletosScreen';
-import HomeScreen from '../../screens/HomeScreen';
-import OfertasScreen from '../../screens/OfertasScreen';
-import PerfilScreen from '../../screens/PerfilScreen';
+import AyudaScreen from '../screens/AyudaScreen';
+import BoletosScreen from '../screens/BoletosScreen';
+import HomeScreen from '../screens/HomeScreen';
+import OfertasScreen from '../screens/OfertasScreen';
+import PerfilScreen from '../screens/PerfilScreen';
 
 const Tab = createBottomTabNavigator();
 
