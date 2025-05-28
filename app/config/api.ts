@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const IP = '192.168.100.115';
+export const IP = '192.168.100.9';
 export const API_BASE_URL = `http://${IP}:3000/api`;
 
 // Endpoints de la API
@@ -32,5 +32,27 @@ export const API_ENDPOINTS = {
         GET_BY_ID: (id: number) => `${API_BASE_URL}/cooperativa/${id}`,
         UPDATE: (id: number) => `${API_BASE_URL}/cooperativa/${id}`,
         DELETE: (id: number) => `${API_BASE_URL}/cooperativa/${id}`,
-    }
+    },
+    // Buses
+    BUSES: {
+        CREATE: `${API_BASE_URL}/buses`,
+        GET_ALL: `${API_BASE_URL}/buses`,
+        GET_BY_ID: (id: number) => `${API_BASE_URL}/buses/${id}`,
+        UPDATE: (id: number) => `${API_BASE_URL}/buses/${id}`,
+        DELETE: (id: number) => `${API_BASE_URL}/buses/${id}`,
+    },
+    // Usuarios
+    USUARIOS: {
+        CREATE: `${API_BASE_URL}/user`,
+        GET_ALL: `${API_BASE_URL}/user`,
+        GET_BY_ID: (id: string) => `${API_BASE_URL}/user/${id}`,
+        UPDATE: (id: string) => `${API_BASE_URL}/user/${id}`,
+        DELETE: (id: string) => `${API_BASE_URL}/user/${id}`,
+    },
+    // Autenticación
+    AUTH: {
+        LOGIN: `${API_BASE_URL}/auth/login`,
+        REGISTER: `${API_BASE_URL}/auth/register`,
+        PROFILE: `${API_BASE_URL}/auth/profile`,
+    },
 }; 
