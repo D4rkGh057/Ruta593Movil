@@ -18,6 +18,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { API_ENDPOINTS } from "../../config/api";
 import { NOVEDADES_MOCK, OFERTAS_MOCK } from "../../data/mockData";
+import BusSearchResults from "../components/BusSearchResults";
 import { NovedadCard } from "../components/NovedadCard";
 import { OfertaCard } from "../components/OfertaCard";
 
@@ -92,6 +93,7 @@ export default function HomeScreen() {
     const [cargando, setCargando] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const [seleccionActual, setSeleccionActual] = useState<"origen" | "destino">("origen");
+    const [mostrarResultados, setMostrarResultados] = useState(false);
 
     useEffect(() => {
         cargarParadas();
@@ -328,8 +330,49 @@ export default function HomeScreen() {
         return true;
     };
 
-    const handleBuscarBuses = () => {
-        buscarFrecuencias();
+    const handleBuscarBuses = async () => {
+        if (!validarBusqueda()) return;
+        setCargando(true);
+        setError(null);
+
+        try {
+            await buscarFrecuencias();
+            setMostrarResultados(true);
+        } catch (error) {
+            console.error("Error al buscar buses:", error);
+            setError("Error al buscar frecuencias disponibles");
+            if (Platform.OS === "android") {
+                ToastAndroid.show(
+                    error instanceof Error ? error.message : "Error al buscar frecuencias",
+                    ToastAndroid.SHORT
+                );
+            } else {
+                Alert.alert("Error", "No se pudieron buscar las frecuencias disponibles");
+            }
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const handleSelectBus = (frecuencia: any) => {
+        // Aquí manejaremos la selección del bus
+        Alert.alert(
+            "Bus seleccionado",
+            `Has seleccionado el bus #${frecuencia.bus?.numero_bus}. ¿Deseas continuar con la reserva?`,
+            [
+                {
+                    text: "Cancelar",
+                    style: "cancel"
+                },
+                {
+                    text: "Continuar",
+                    onPress: () => {
+                        // Aquí implementaremos la navegación a la pantalla de reserva
+                        console.log("Continuar con la reserva", frecuencia);
+                    }
+                }
+            ]
+        );
     };
 
     const abrirSelectorParadas = (tipo: "origen" | "destino") => {
@@ -350,6 +393,30 @@ export default function HomeScreen() {
         }
         setModalVisible(false);
     };
+
+    if (mostrarResultados && frecuencias.length > 0) {
+        return (
+            <SafeAreaView className="flex-1 bg-white">
+                <StatusBar barStyle="dark-content" backgroundColor="white" />
+                <View className="flex-row items-center p-4 border-b border-gray-200">
+                    <TouchableOpacity 
+                        onPress={() => setMostrarResultados(false)}
+                        className="mr-4"
+                    >
+                        <Ionicons name="arrow-back" size={24} color="black" />
+                    </TouchableOpacity>
+                    <View>
+                        <Text className="text-lg font-bold">{origen} → {destino}</Text>
+                        <Text className="text-gray-600">{formatearFecha(fechaIda)}</Text>
+                    </View>
+                </View>
+                <BusSearchResults 
+                    frecuencias={frecuencias}
+                    onSelectBus={handleSelectBus}
+                />
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-white">

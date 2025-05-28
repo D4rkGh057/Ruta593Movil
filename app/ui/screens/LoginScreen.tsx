@@ -30,8 +30,14 @@ export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
                     />
                     <Image
                         source={require("../../../assets/images/ruta593.png")}
-                        className="w-280 h-93 mb-12"
+                        className="w-280 h-93 mb-4"
                     />
+                    <Text
+                        style={{ fontFamily: "Inter" }}
+                        className="text-base text-black mb-8 text-center"
+                    >
+                        Viajes Óptimos, Horarios Útiles y Eficientes
+                    </Text>
                     <TextInput
                         className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
                         placeholder="Ingresa tu Correo"
