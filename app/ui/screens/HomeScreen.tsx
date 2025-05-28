@@ -1,10 +1,85 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import React, { useState } from "react";
-import { Alert, Platform, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    Text,
+    ToastAndroid,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { API_ENDPOINTS } from "../../config/api";
+import { NOVEDADES_MOCK, OFERTAS_MOCK } from "../../data/mockData";
+import { NovedadCard } from "../components/NovedadCard";
+import { OfertaCard } from "../components/OfertaCard";
+
+interface Parada {
+    parada_id: number;
+    ciudad: string;
+    activo: boolean;
+    fecha_creacion: string;
+}
+
+interface Frecuencia {
+    frecuencia_id: number;
+    nombre_frecuencia: string;
+    bus_id: number;
+    conductor_id: number;
+    hora_salida: string;
+    hora_llegada: string;
+    origen: string;
+    destino: string;
+    provincia: string;
+    activo: boolean;
+    total: number;
+    nro_aprobacion: string;
+    es_directo: boolean;
+    fecha_creacion: string;
+    conductor?: {
+        usuario_id: number;
+        identificacion: string;
+        primer_nombre: string;
+        segundo_nombre: string;
+        primer_apellido: string;
+        segundo_apellido: string;
+        correo: string;
+        telefono: string;
+        rol: string;
+        direccion: string;
+        fecha_eliminacion: string | null;
+        fecha_creacion: string;
+    };
+    bus?: {
+        bus_id: number;
+        numero_bus: number;
+        placa: string;
+        chasis: string;
+        carroceria: string;
+        total_asientos_normales: number;
+        total_asientos_vip: number;
+        deletedAt: string | null;
+        activo: boolean;
+        fotos: any[];
+        asientos: Array<{
+            asiento_id: number;
+            tipo_asiento: string;
+            numero_asiento: number;
+            fecha_creacion: string;
+        }>;
+    };
+    rutas: any[];
+}
 
 export default function HomeScreen() {
+    const insets = useSafeAreaInsets();
     const [origen, setOrigen] = useState("Seleccionar origen");
     const [destino, setDestino] = useState("Seleccionar destino");
     const [fechaIda, setFechaIda] = useState(new Date());
@@ -12,6 +87,124 @@ export default function HomeScreen() {
     const [showDatePickerIda, setShowDatePickerIda] = useState(false);
     const [showDatePickerRetorno, setShowDatePickerRetorno] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [paradas, setParadas] = useState<Parada[]>([]);
+    const [frecuencias, setFrecuencias] = useState<Frecuencia[]>([]);
+    const [cargando, setCargando] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [seleccionActual, setSeleccionActual] = useState<"origen" | "destino">("origen");
+
+    useEffect(() => {
+        cargarParadas();
+    }, []);
+
+    const cargarParadas = async () => {
+        try {
+            const response = await fetch(API_ENDPOINTS.PARADAS.GET_ALL);
+            if (!response.ok) throw new Error("Error al cargar paradas");
+            const data = await response.json();
+            console.log("Datos de paradas:", data);
+            setParadas(data);
+        } catch (error) {
+            setError("Error al cargar las paradas disponibles");
+            console.error(error);
+        }
+    };
+
+    const buscarFrecuencias = async () => {
+        if (!validarBusqueda()) return;
+
+        setCargando(true);
+        setError(null);
+
+        try {
+            const origenCodificado = encodeURIComponent(origen);
+            const destinoCodificado = encodeURIComponent(destino);
+
+            console.log("Buscando frecuencias para:", {
+                origen: origenCodificado,
+                destino: destinoCodificado,
+            });
+
+            // Primero buscamos por origen
+            const responseOrigen = await fetch(
+                API_ENDPOINTS.FRECUENCIAS.GET_BY_ORIGEN(origenCodificado)
+            );
+            console.log("Response origen status:", responseOrigen.status);
+
+            if (!responseOrigen.ok) {
+                const errorText = await responseOrigen.text();
+                console.log("Error en respuesta origen:", errorText);
+                // Si el error es 400 y el mensaje indica que no hay frecuencias, continuamos con destino
+                if (responseOrigen.status !== 400) {
+                    throw new Error("Error al buscar frecuencias por origen");
+                }
+            }
+
+            const frecuenciasOrigen = responseOrigen.ok ? await responseOrigen.json() : [];
+            console.log("Frecuencias por origen:", frecuenciasOrigen);
+
+            // Filtramos por destino
+            const responseDestino = await fetch(
+                API_ENDPOINTS.FRECUENCIAS.GET_BY_DESTINO(destinoCodificado)
+            );
+            console.log("Response destino status:", responseDestino.status);
+
+            if (!responseDestino.ok) {
+                const errorText = await responseDestino.text();
+                console.log("Error en respuesta destino:", errorText);
+                // Si el error es 400 y el mensaje indica que no hay frecuencias, continuamos
+                if (responseDestino.status !== 400) {
+                    throw new Error("Error al buscar frecuencias por destino");
+                }
+            }
+
+            const frecuenciasDestino = responseDestino.ok ? await responseDestino.json() : [];
+            console.log("Frecuencias por destino:", frecuenciasDestino);
+
+            // Encontramos las frecuencias que coinciden tanto en origen como en destino
+            const frecuenciasDisponibles = frecuenciasOrigen.filter((fo: Frecuencia) =>
+                frecuenciasDestino.some(
+                    (fd: Frecuencia) =>
+                        fd.origen === fo.origen && fd.destino === fo.destino && fd.activo === true
+                )
+            );
+
+            console.log("Frecuencias disponibles:", frecuenciasDisponibles);
+
+            setFrecuencias(frecuenciasDisponibles);
+
+            if (frecuenciasDisponibles.length === 0) {
+                if (Platform.OS === "android") {
+                    ToastAndroid.show("No hay buses para esta ruta", ToastAndroid.LONG);
+                } else {
+                    Alert.alert(
+                        "Sin resultados",
+                        "No se encontraron frecuencias disponibles para la ruta seleccionada",
+                        [{ text: "Entendido" }]
+                    );
+                }
+            } else {
+                Alert.alert(
+                    "Búsqueda exitosa",
+                    `Se encontraron ${frecuenciasDisponibles.length} buses disponibles para la ruta ${origen} - ${destino}`,
+                    [{ text: "Ver resultados" }]
+                );
+            }
+        } catch (error) {
+            console.error("Error completo:", error);
+            setError("Error al buscar frecuencias disponibles");
+            if (Platform.OS === "android") {
+                ToastAndroid.show(
+                    error instanceof Error ? error.message : "Error al buscar frecuencias",
+                    ToastAndroid.SHORT
+                );
+            } else {
+                Alert.alert("Error", "No se pudieron buscar las frecuencias disponibles");
+            }
+        } finally {
+            setCargando(false);
+        }
+    };
 
     const intercambiarUbicaciones = () => {
         // Validar que ambos campos tengan valores seleccionados
@@ -136,26 +329,32 @@ export default function HomeScreen() {
     };
 
     const handleBuscarBuses = () => {
-        setError(null);
+        buscarFrecuencias();
+    };
 
-        if (!validarBusqueda()) {
+    const abrirSelectorParadas = (tipo: "origen" | "destino") => {
+        setSeleccionActual(tipo);
+        setModalVisible(true);
+    };
+
+    const seleccionarParada = (parada: Parada) => {
+        if (!parada.activo) {
+            Alert.alert("Parada no disponible", "Esta parada no está activa actualmente");
             return;
         }
 
-        // Aquí iría la lógica para buscar buses
-        Alert.alert(
-            "Búsqueda exitosa",
-            `Buses encontrados para:\nOrigen: ${origen}\nDestino: ${destino}\nFecha: ${formatearFecha(
-                fechaIda
-            )}`,
-            [{ text: "Continuar" }]
-        );
+        if (seleccionActual === "origen") {
+            setOrigen(parada.ciudad);
+        } else {
+            setDestino(parada.ciudad);
+        }
+        setModalVisible(false);
     };
 
     return (
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar barStyle="dark-content" backgroundColor="white" />
-            <ScrollView className="flex-1">
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
                 <View className="p-4">
                     {/* Encabezado */}
                     <View className="mb-4">
@@ -179,12 +378,7 @@ export default function HomeScreen() {
                             <Text className="text-gray-600 mb-1">Origen</Text>
                             <TouchableOpacity
                                 className="flex-row items-center justify-between"
-                                onPress={() =>
-                                    Alert.alert(
-                                        "Seleccionar origen",
-                                        "Aquí iría el selector de origen"
-                                    )
-                                }
+                                onPress={() => abrirSelectorParadas("origen")}
                             >
                                 <Text
                                     className={`text-lg ${
@@ -214,12 +408,7 @@ export default function HomeScreen() {
                             <Text className="text-gray-600 mb-1">Destino</Text>
                             <TouchableOpacity
                                 className="flex-row items-center justify-between"
-                                onPress={() =>
-                                    Alert.alert(
-                                        "Seleccionar destino",
-                                        "Aquí iría el selector de destino"
-                                    )
-                                }
+                                onPress={() => abrirSelectorParadas("destino")}
                             >
                                 <Text
                                     className={`text-lg ${
@@ -326,31 +515,151 @@ export default function HomeScreen() {
                         />
                     )}
 
-                    {/* Botón de búsqueda */}
+                    {/* Botón de búsqueda con indicador de carga */}
                     <TouchableOpacity
                         className="bg-yellow-400 p-4 rounded-full flex-row items-center justify-center mb-6"
                         onPress={handleBuscarBuses}
+                        disabled={cargando}
                     >
-                        <Ionicons name="search" size={24} color="black" className="mr-2" />
-                        <Text className="text-lg font-semibold">Buscar buses</Text>
+                        {cargando ? (
+                            <ActivityIndicator color="black" />
+                        ) : (
+                            <>
+                                <Ionicons name="search" size={24} color="black" className="mr-2" />
+                                <Text className="text-lg font-semibold">Buscar buses</Text>
+                            </>
+                        )}
                     </TouchableOpacity>
 
                     {/* Sección Novedades */}
                     <View className="mb-6">
                         <Text className="text-2xl font-bold mb-4">Novedades</Text>
-                        <View className="bg-white rounded-lg overflow-hidden shadow">
-                            {/* Aquí puedes agregar una imagen o contenido para novedades */}
-                        </View>
+                        {NOVEDADES_MOCK.map((novedad) => (
+                            <NovedadCard
+                                key={novedad.id}
+                                title={novedad.title}
+                                subtitle={novedad.subtitle}
+                                image={novedad.image}
+                                onPress={() =>
+                                    Alert.alert("Novedad", "Más información próximamente")
+                                }
+                            />
+                        ))}
                     </View>
 
                     {/* Sección Ofertas */}
                     <View>
-                        <Text className="text-2xl font-bold mb-4">Ofertas</Text>
-                        <View className="bg-white rounded-lg overflow-hidden shadow">
-                            {/* Aquí puedes agregar una imagen o contenido para ofertas */}
+                        <View className="flex-row justify-between items-center mb-4">
+                            <Text className="text-2xl font-bold">Ofertas</Text>
+                            <TouchableOpacity
+                                onPress={() => Alert.alert("Ofertas", "Ver todas las ofertas")}
+                            >
+                                <Text className="text-blue-600">Ver todo</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            className="mb-6"
+                        >
+                            {OFERTAS_MOCK.map((oferta) => (
+                                <OfertaCard
+                                    key={oferta.id}
+                                    title={oferta.title}
+                                    validUntil={oferta.validUntil}
+                                    image={oferta.image}
+                                    tag={oferta.tag}
+                                    type={oferta.type}
+                                    onPress={() =>
+                                        Alert.alert("Oferta", "Más detalles próximamente")
+                                    }
+                                />
+                            ))}
+                        </ScrollView>
+                    </View>
+
+                    {/* Sección Visto anteriormente */}
+                    <View className="mb-6">
+                        <Text className="text-2xl font-bold mb-4">Visto anteriormente</Text>
+                        <View className="bg-white rounded-xl p-4 shadow">
+                            <View className="flex-row items-center mb-2">
+                                <Image
+                                    source={{
+                                        uri: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=64&auto=format&fit=crop",
+                                    }}
+                                    className="w-8 h-8 rounded-full"
+                                    resizeMode="cover"
+                                />
+                                <View className="flex-row items-center ml-2">
+                                    <Text className="text-lg">1 bus visto</Text>
+                                </View>
+                            </View>
+                            <View className="flex-row justify-between items-center">
+                                <View>
+                                    <Text className="text-lg font-semibold">Ambato → Quito</Text>
+                                    <Text className="text-gray-600">lun 26 may</Text>
+                                </View>
+                                <Ionicons name="time-outline" size={24} color="#666" />
+                            </View>
                         </View>
                     </View>
                 </View>
+
+                {/* Modal para selección de paradas */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View className="flex-1 bg-black/50 justify-end">
+                        <View className="bg-white rounded-t-3xl p-4 h-3/4">
+                            <View className="flex-row justify-between items-center mb-4">
+                                <Text className="text-xl font-bold">
+                                    Seleccionar{" "}
+                                    {seleccionActual === "origen" ? "origen" : "destino"}
+                                </Text>
+                                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                    <Ionicons name="close" size={24} color="black" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {cargando ? (
+                                <ActivityIndicator size="large" color="#000" />
+                            ) : error ? (
+                                <Text className="text-red-500">{error}</Text>
+                            ) : (
+                                <FlatList
+                                    data={paradas}
+                                    keyExtractor={(item) => item.parada_id.toString()}
+                                    renderItem={({ item }) => (
+                                        <TouchableOpacity
+                                            key={item.parada_id}
+                                            className={`p-4 border-b border-gray-200 ${
+                                                !item.activo ? "opacity-50" : ""
+                                            }`}
+                                            onPress={() => seleccionarParada(item)}
+                                            disabled={!item.activo}
+                                        >
+                                            <Text
+                                                className={`text-lg ${
+                                                    !item.activo ? "text-gray-400" : "text-black"
+                                                }`}
+                                            >
+                                                {item.ciudad}
+                                            </Text>
+                                            {!item.activo && (
+                                                <Text className="text-sm text-red-500">
+                                                    No disponible
+                                                </Text>
+                                            )}
+                                        </TouchableOpacity>
+                                    )}
+                                />
+                            )}
+                        </View>
+                    </View>
+                </Modal>
             </ScrollView>
         </SafeAreaView>
     );

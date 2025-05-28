@@ -12,7 +12,7 @@ import {
     View,
 } from "react-native";
 
-export default function LoginScreen() {
+export default function LoginScreen({ onLogin }: { onLogin?: () => void }) {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [password, setPassword] = useState("");
@@ -62,7 +62,7 @@ export default function LoginScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="w-56 h-14 bg-yellow-400 justify-center items-center rounded-xl mb-5"
-                        onPress={() => router.push("/home")}
+                        onPress={onLogin}
                     >
                         <Text className="text-black" style={{ fontFamily: "Inter" }}>
                             Iniciar Sesión
