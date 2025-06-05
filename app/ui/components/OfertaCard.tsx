@@ -28,11 +28,7 @@ export const OfertaCard = ({ title, validUntil, image, tag, type, onPress }: Ofe
                         onLoadEnd={() => setImageLoading(false)}
                     />
                     {imageLoading && (
-                        <ActivityIndicator
-                            size="small"
-                            color="#000"
-                            className="absolute"
-                        />
+                        <ActivityIndicator size="small" color="#000" className="absolute" />
                     )}
                 </View>
                 <View className="flex-1 ml-3">
@@ -50,4 +46,4 @@ export const OfertaCard = ({ title, validUntil, image, tag, type, onPress }: Ofe
             </View>
         </TouchableOpacity>
     );
-}; 
+};

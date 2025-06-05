@@ -10,7 +10,7 @@ export const NOVEDADES_MOCK = [
         title: "Viaja Seguro",
         subtitle: "Todas nuestras unidades cuentan con GPS y monitoreo en tiempo real",
         image: "https://images.unsplash.com/photo-1494515843206-f3117d3f51b7?q=80&w=1000&auto=format&fit=crop",
-    }
+    },
 ];
 
 export const OFERTAS_MOCK = [
@@ -20,7 +20,7 @@ export const OFERTAS_MOCK = [
         validUntil: "31 may",
         image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=400&auto=format&fit=crop",
         tag: "NUEVO",
-        type: "Bus"
+        type: "Bus",
     },
     {
         id: 2,
@@ -28,7 +28,7 @@ export const OFERTAS_MOCK = [
         validUntil: "15 jun",
         image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=400&auto=format&fit=crop",
         tag: "DESTACADO",
-        type: "Bus"
+        type: "Bus",
     },
     {
         id: 3,
@@ -36,6 +36,6 @@ export const OFERTAS_MOCK = [
         validUntil: "31 dic",
         image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=400&auto=format&fit=crop",
         tag: "ESPECIAL",
-        type: "Bus"
-    }
-]; 
+        type: "Bus",
+    },
+];

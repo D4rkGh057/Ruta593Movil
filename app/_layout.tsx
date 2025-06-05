@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
 import React, { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -16,7 +16,7 @@ export default function RootLayout() {
 
     useEffect(() => {
         const checkSession = async () => {
-            console.log("Checking session...",AsyncStorage.getItem('userToken'));
+            console.log("Checking session...", AsyncStorage.getItem("userToken"));
             const token = await SessionStorage.getSession();
             if (token) {
                 setLogueado(true);
@@ -30,11 +30,7 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            {logueado ? (
-                <TabNavigator />
-            ) : (
-                <LoginScreen onLogin={() => setLogueado(true)} />
-            )}
+            {logueado ? <TabNavigator /> : <LoginScreen onLogin={() => setLogueado(true)} />}
         </SafeAreaProvider>
     );
 }

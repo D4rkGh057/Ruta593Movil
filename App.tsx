@@ -1,8 +1,8 @@
-import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import SessionStorage from './app/adapters/stores/SessionStorage';
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { StatusBar } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import SessionStorage from "./app/adapters/stores/SessionStorage";
 
 export default function App() {
     const [isLoading, setIsLoading] = useState(true);
@@ -12,7 +12,7 @@ export default function App() {
         const checkSession = async () => {
             const token = await SessionStorage.getSession();
             if (token) {
-                router.replace('/home');
+                router.replace("/home");
             } else {
                 setIsLoading(false);
             }

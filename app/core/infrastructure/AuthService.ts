@@ -1,18 +1,18 @@
-import { API_ENDPOINTS } from '../../config/api';
+import { API_ENDPOINTS } from "../../config/api";
 
 // Servicio de autenticación
 export class AuthService {
     static async login(email: string, password: string) {
         const response = await fetch(API_ENDPOINTS.AUTH.LOGIN, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify({ correo: email, password }),
         });
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.message ?? 'Error al iniciar sesión');
+            throw new Error(error.message ?? "Error al iniciar sesión");
         }
         return response.json();
     }
@@ -29,30 +29,30 @@ export class AuthService {
         direccion: string;
     }) {
         const response = await fetch(API_ENDPOINTS.AUTH.REGISTER, {
-            method: 'POST',
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(data),
         });
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.message ?? 'Error al registrar usuario');
+            throw new Error(error.message ?? "Error al registrar usuario");
         }
         return response.json();
     }
 
     static async getProfile(token: string) {
         const response = await fetch(API_ENDPOINTS.AUTH.PROFILE, {
-            method: 'GET',
+            method: "GET",
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
             },
         });
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            throw new Error(error.message ?? 'Error al obtener perfil');
+            throw new Error(error.message ?? "Error al obtener perfil");
         }
         return response.json();
     }

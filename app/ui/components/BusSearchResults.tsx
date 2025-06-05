@@ -1,6 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Image, Modal, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import {
+    ActivityIndicator,
+    Image,
+    Modal,
+    ScrollView,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Cooperativa {
@@ -41,7 +50,8 @@ const BusCard: React.FC<BusSearchResultProps> = ({ frecuencia, onSelect, coopera
     // Generamos una imagen aleatoria para cada bus usando Picsum
     const busImageUrl = `https://picsum.photos/200/200?random=${frecuencia.frecuencia_id}`;
     // Logo de la compañía (usando el logo de la cooperativa o una imagen de respaldo)
-    const companyLogoUrl = cooperativa?.logo || `https://picsum.photos/100/100?random=${frecuencia.frecuencia_id + 1}`;
+    const companyLogoUrl =
+        cooperativa?.logo || `https://picsum.photos/100/100?random=${frecuencia.frecuencia_id + 1}`;
 
     return (
         <TouchableOpacity
@@ -178,16 +188,56 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                 setError(null);
                 // Simular datos de cooperativas
                 const cooperativasMock = [
-                    { cooperativa_id: 1, nombre: "Trans Esmeraldas", ruc: "1234567890001", telefono: "02-555-1234", correo: "info@transesmeraldas.com", logo: "https://picsum.photos/100", direccion: "Av. Principal #123" },
-                    { cooperativa_id: 2, nombre: "Flota Imbabura", ruc: "1234567890002", telefono: "02-555-5678", correo: "info@flotaimbabura.com", logo: "https://picsum.photos/101", direccion: "Calle Central #456" },
-                    { cooperativa_id: 3, nombre: "Cooperativa Loja", ruc: "1234567890003", telefono: "02-555-9012", correo: "info@cooploja.com", logo: "https://picsum.photos/102", direccion: "Plaza Mayor #789" },
-                    { cooperativa_id: 4, nombre: "Expreso Carchi", ruc: "1234567890004", telefono: "02-555-3456", correo: "info@expresocarchi.com", logo: "https://picsum.photos/103", direccion: "Terminal Norte #321" },
-                    { cooperativa_id: 5, nombre: "Trans Occidental", ruc: "1234567890005", telefono: "02-555-7890", correo: "info@transoccidental.com", logo: "https://picsum.photos/104", direccion: "Av. Terminal #654" }
+                    {
+                        cooperativa_id: 1,
+                        nombre: "Trans Esmeraldas",
+                        ruc: "1234567890001",
+                        telefono: "02-555-1234",
+                        correo: "info@transesmeraldas.com",
+                        logo: "https://picsum.photos/100",
+                        direccion: "Av. Principal #123",
+                    },
+                    {
+                        cooperativa_id: 2,
+                        nombre: "Flota Imbabura",
+                        ruc: "1234567890002",
+                        telefono: "02-555-5678",
+                        correo: "info@flotaimbabura.com",
+                        logo: "https://picsum.photos/101",
+                        direccion: "Calle Central #456",
+                    },
+                    {
+                        cooperativa_id: 3,
+                        nombre: "Cooperativa Loja",
+                        ruc: "1234567890003",
+                        telefono: "02-555-9012",
+                        correo: "info@cooploja.com",
+                        logo: "https://picsum.photos/102",
+                        direccion: "Plaza Mayor #789",
+                    },
+                    {
+                        cooperativa_id: 4,
+                        nombre: "Expreso Carchi",
+                        ruc: "1234567890004",
+                        telefono: "02-555-3456",
+                        correo: "info@expresocarchi.com",
+                        logo: "https://picsum.photos/103",
+                        direccion: "Terminal Norte #321",
+                    },
+                    {
+                        cooperativa_id: 5,
+                        nombre: "Trans Occidental",
+                        ruc: "1234567890005",
+                        telefono: "02-555-7890",
+                        correo: "info@transoccidental.com",
+                        logo: "https://picsum.photos/104",
+                        direccion: "Av. Terminal #654",
+                    },
                 ];
                 setCooperativas(cooperativasMock);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Error desconocido');
-                console.error('Error al cargar cooperativas:', err);
+                setError(err instanceof Error ? err.message : "Error desconocido");
+                console.error("Error al cargar cooperativas:", err);
             } finally {
                 setIsLoadingCooperativas(false);
             }
@@ -197,12 +247,15 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
     }, []);
 
     const filteredFrecuencias = useMemo(() => {
-        return frecuencias.filter(frecuencia => {
+        return frecuencias.filter((frecuencia) => {
             if (filters.soloDirectos && !frecuencia.es_directo) {
                 return false;
             }
 
-            if (filters.soloVIP && (!frecuencia.bus?.total_asientos_vip || frecuencia.bus.total_asientos_vip === 0)) {
+            if (
+                filters.soloVIP &&
+                (!frecuencia.bus?.total_asientos_vip || frecuencia.bus.total_asientos_vip === 0)
+            ) {
                 return false;
             }
 
@@ -214,7 +267,7 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                 return false;
             }
 
-            const hora = parseInt(frecuencia.hora_salida.split(':')[0]);
+            const hora = parseInt(frecuencia.hora_salida.split(":")[0]);
             const esManana = hora >= 6 && hora < 12;
             const esTarde = hora >= 12 && hora < 18;
             const esNoche = hora >= 18 || hora < 6;
@@ -234,13 +287,13 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
     }, [frecuencias, filters]);
 
     const preciosDisponibles = useMemo(() => {
-        const precios = frecuencias.map(f => f.total);
+        const precios = frecuencias.map((f) => f.total);
         return [...new Set(precios)].sort((a, b) => a - b);
     }, [frecuencias]);
 
     const getCooperativaById = (id?: number) => {
         if (!id || !Array.isArray(cooperativas)) return undefined;
-        return cooperativas.find(c => c.cooperativa_id === id);
+        return cooperativas.find((c) => c.cooperativa_id === id);
     };
 
     return (
@@ -248,7 +301,7 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
             <View className="flex-1 bg-gray-50">
                 {/* Botón de filtro */}
                 <View className="bg-white p-4 border-b border-gray-200">
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         className="flex-row items-center justify-center py-2 px-4 border border-gray-200 rounded-lg"
                         onPress={() => setShowFiltersModal(true)}
                     >
@@ -258,15 +311,16 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                 </View>
 
                 {/* Lista de buses */}
-                <ScrollView 
+                <ScrollView
                     className="flex-1"
                     contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
                 >
                     <View className="p-4">
                         <Text className="text-gray-600 mb-4">
-                            {filteredFrecuencias.length} {filteredFrecuencias.length === 1 ? 'bus' : 'buses'}
+                            {filteredFrecuencias.length}{" "}
+                            {filteredFrecuencias.length === 1 ? "bus" : "buses"}
                         </Text>
-                        
+
                         {filteredFrecuencias.length === 0 ? (
                             <View className="items-center justify-center py-8">
                                 <Ionicons name="bus-outline" size={48} color="#666" />
@@ -311,7 +365,9 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                             {isLoadingCooperativas ? (
                                 <View className="items-center py-4">
                                     <ActivityIndicator size="small" color="#FFB800" />
-                                    <Text className="text-gray-500 mt-2">Cargando cooperativas...</Text>
+                                    <Text className="text-gray-500 mt-2">
+                                        Cargando cooperativas...
+                                    </Text>
                                 </View>
                             ) : error ? (
                                 <View className="items-center py-4">
@@ -319,24 +375,30 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                                 </View>
                             ) : (
                                 <View className="flex-row flex-wrap gap-2 mb-4">
-                                    {Array.isArray(cooperativas) && cooperativas.map((cooperativa) => (
-                                        <TouchableOpacity
-                                            key={cooperativa.cooperativa_id}
-                                            className={`px-4 py-2 rounded-full border ${
-                                                filters.cooperativaId === cooperativa.cooperativa_id 
-                                                    ? 'bg-yellow-400 border-yellow-400' 
-                                                    : 'border-gray-300'
-                                            }`}
-                                            onPress={() => setFilters(prev => ({ 
-                                                ...prev, 
-                                                cooperativaId: prev.cooperativaId === cooperativa.cooperativa_id 
-                                                    ? null 
-                                                    : cooperativa.cooperativa_id 
-                                            }))}
-                                        >
-                                            <Text>{cooperativa.nombre}</Text>
-                                        </TouchableOpacity>
-                                    ))}
+                                    {Array.isArray(cooperativas) &&
+                                        cooperativas.map((cooperativa) => (
+                                            <TouchableOpacity
+                                                key={cooperativa.cooperativa_id}
+                                                className={`px-4 py-2 rounded-full border ${
+                                                    filters.cooperativaId ===
+                                                    cooperativa.cooperativa_id
+                                                        ? "bg-yellow-400 border-yellow-400"
+                                                        : "border-gray-300"
+                                                }`}
+                                                onPress={() =>
+                                                    setFilters((prev) => ({
+                                                        ...prev,
+                                                        cooperativaId:
+                                                            prev.cooperativaId ===
+                                                            cooperativa.cooperativa_id
+                                                                ? null
+                                                                : cooperativa.cooperativa_id,
+                                                    }))
+                                                }
+                                            >
+                                                <Text>{cooperativa.nombre}</Text>
+                                            </TouchableOpacity>
+                                        ))}
                                 </View>
                             )}
 
@@ -344,8 +406,8 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                                 <Text>Solo viajes directos</Text>
                                 <Switch
                                     value={filters.soloDirectos}
-                                    onValueChange={(value) => 
-                                        setFilters(prev => ({ ...prev, soloDirectos: value }))
+                                    onValueChange={(value) =>
+                                        setFilters((prev) => ({ ...prev, soloDirectos: value }))
                                     }
                                 />
                             </View>
@@ -354,8 +416,8 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                                 <Text>Solo buses con asientos VIP</Text>
                                 <Switch
                                     value={filters.soloVIP}
-                                    onValueChange={(value) => 
-                                        setFilters(prev => ({ ...prev, soloVIP: value }))
+                                    onValueChange={(value) =>
+                                        setFilters((prev) => ({ ...prev, soloVIP: value }))
                                     }
                                 />
                             </View>
@@ -365,34 +427,46 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                             <View className="flex-row flex-wrap gap-2 mb-4">
                                 <TouchableOpacity
                                     className={`px-4 py-2 rounded-full border ${
-                                        filters.horarioManana ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'
+                                        filters.horarioManana
+                                            ? "bg-yellow-400 border-yellow-400"
+                                            : "border-gray-300"
                                     }`}
-                                    onPress={() => setFilters(prev => ({ 
-                                        ...prev, 
-                                        horarioManana: !prev.horarioManana 
-                                    }))}
+                                    onPress={() =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            horarioManana: !prev.horarioManana,
+                                        }))
+                                    }
                                 >
                                     <Text>Mañana (6:00 - 11:59)</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     className={`px-4 py-2 rounded-full border ${
-                                        filters.horarioTarde ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'
+                                        filters.horarioTarde
+                                            ? "bg-yellow-400 border-yellow-400"
+                                            : "border-gray-300"
                                     }`}
-                                    onPress={() => setFilters(prev => ({ 
-                                        ...prev, 
-                                        horarioTarde: !prev.horarioTarde 
-                                    }))}
+                                    onPress={() =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            horarioTarde: !prev.horarioTarde,
+                                        }))
+                                    }
                                 >
                                     <Text>Tarde (12:00 - 17:59)</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     className={`px-4 py-2 rounded-full border ${
-                                        filters.horarioNoche ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'
+                                        filters.horarioNoche
+                                            ? "bg-yellow-400 border-yellow-400"
+                                            : "border-gray-300"
                                     }`}
-                                    onPress={() => setFilters(prev => ({ 
-                                        ...prev, 
-                                        horarioNoche: !prev.horarioNoche 
-                                    }))}
+                                    onPress={() =>
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            horarioNoche: !prev.horarioNoche,
+                                        }))
+                                    }
                                 >
                                     <Text>Noche (18:00 - 5:59)</Text>
                                 </TouchableOpacity>
@@ -405,12 +479,17 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                                     <TouchableOpacity
                                         key={precio}
                                         className={`px-4 py-2 rounded-full border ${
-                                            filters.precioMaximo === precio ? 'bg-yellow-400 border-yellow-400' : 'border-gray-300'
+                                            filters.precioMaximo === precio
+                                                ? "bg-yellow-400 border-yellow-400"
+                                                : "border-gray-300"
                                         }`}
-                                        onPress={() => setFilters(prev => ({ 
-                                            ...prev, 
-                                            precioMaximo: prev.precioMaximo === precio ? null : precio 
-                                        }))}
+                                        onPress={() =>
+                                            setFilters((prev) => ({
+                                                ...prev,
+                                                precioMaximo:
+                                                    prev.precioMaximo === precio ? null : precio,
+                                            }))
+                                        }
                                     >
                                         <Text>Hasta ${precio}</Text>
                                     </TouchableOpacity>
@@ -420,15 +499,17 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                             {/* Botón para limpiar filtros */}
                             <TouchableOpacity
                                 className="bg-gray-200 px-4 py-2 rounded-full items-center mt-2"
-                                onPress={() => setFilters({
-                                    soloDirectos: false,
-                                    soloVIP: false,
-                                    precioMaximo: null,
-                                    horarioManana: false,
-                                    horarioTarde: false,
-                                    horarioNoche: false,
-                                    cooperativaId: null,
-                                })}
+                                onPress={() =>
+                                    setFilters({
+                                        soloDirectos: false,
+                                        soloVIP: false,
+                                        precioMaximo: null,
+                                        horarioManana: false,
+                                        horarioTarde: false,
+                                        horarioNoche: false,
+                                        cooperativaId: null,
+                                    })
+                                }
                             >
                                 <Text>Limpiar filtros</Text>
                             </TouchableOpacity>

@@ -362,15 +362,15 @@ export default function HomeScreen() {
             [
                 {
                     text: "Cancelar",
-                    style: "cancel"
+                    style: "cancel",
                 },
                 {
                     text: "Continuar",
                     onPress: () => {
                         // Aquí implementaremos la navegación a la pantalla de reserva
                         console.log("Continuar con la reserva", frecuencia);
-                    }
-                }
+                    },
+                },
             ]
         );
     };
@@ -399,21 +399,17 @@ export default function HomeScreen() {
             <SafeAreaView className="flex-1 bg-white">
                 <StatusBar barStyle="dark-content" backgroundColor="white" />
                 <View className="flex-row items-center p-4 border-b border-gray-200">
-                    <TouchableOpacity 
-                        onPress={() => setMostrarResultados(false)}
-                        className="mr-4"
-                    >
+                    <TouchableOpacity onPress={() => setMostrarResultados(false)} className="mr-4">
                         <Ionicons name="arrow-back" size={24} color="black" />
                     </TouchableOpacity>
                     <View>
-                        <Text className="text-lg font-bold">{origen} → {destino}</Text>
+                        <Text className="text-lg font-bold">
+                            {origen} → {destino}
+                        </Text>
                         <Text className="text-gray-600">{formatearFecha(fechaIda)}</Text>
                     </View>
                 </View>
-                <BusSearchResults 
-                    frecuencias={frecuencias}
-                    onSelectBus={handleSelectBus}
-                />
+                <BusSearchResults frecuencias={frecuencias} onSelectBus={handleSelectBus} />
             </SafeAreaView>
         );
     }
@@ -421,7 +417,10 @@ export default function HomeScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white">
             <StatusBar barStyle="dark-content" backgroundColor="white" />
-            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+            <ScrollView
+                className="flex-1"
+                contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+            >
                 <View className="p-4">
                     {/* Encabezado */}
                     <View className="mb-4">
