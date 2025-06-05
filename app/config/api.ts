@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const IP = '192.168.100.9';
+export const IP = "10.80.3.144";
 export const API_BASE_URL = `http://${IP}:3000/api`;
 
 // Endpoints de la API
@@ -55,4 +55,4 @@ export const API_ENDPOINTS = {
         REGISTER: `${API_BASE_URL}/auth/register`,
         PROFILE: `${API_BASE_URL}/auth/profile`,
     },
-}; 
+};

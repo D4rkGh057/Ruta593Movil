@@ -79,9 +79,7 @@ export default function LoginScreen({ onLogin }: Readonly<{ onLogin?: () => void
                             />
                         </TouchableOpacity>
                     </View>
-                    {error && (
-                        <Text className="text-red-500 mb-2">{error}</Text>
-                    )}
+                    {error && <Text className="text-red-500 mb-2">{error}</Text>}
                     <TouchableOpacity className="self-end mb-5">
                         <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
                             ¿Olvidaste tu contraseña?

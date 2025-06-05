@@ -22,11 +22,7 @@ export const NovedadCard = ({ title, subtitle, image, onPress }: NovedadCardProp
                     onLoadEnd={() => setImageLoading(false)}
                 />
                 {imageLoading && (
-                    <ActivityIndicator
-                        size="large"
-                        color="#000"
-                        className="absolute"
-                    />
+                    <ActivityIndicator size="large" color="#000" className="absolute" />
                 )}
             </View>
             <View className="flex-1 p-4 justify-between">
@@ -43,4 +39,4 @@ export const NovedadCard = ({ title, subtitle, image, onPress }: NovedadCardProp
             </View>
         </View>
     );
-}; 
+};
