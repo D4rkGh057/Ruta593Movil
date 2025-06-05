@@ -1,3 +1,4 @@
+import SessionStorage from '../../adapters/stores/SessionStorage';
 import { User } from '../domain/User';
 
 export interface LoginPort {
@@ -12,7 +13,9 @@ export class LoginUseCase {
   }
 
   async execute(email: string, password: string): Promise<{ user: User; token: string }> {
-    // Aquí se puede agregar lógica de validación, etc.
-    return this.loginPort.login(email, password);
+    const result = await this.loginPort.login(email, password);
+    console.log('Token to be saved:', result.token);
+    await SessionStorage.saveSession(result.token);
+    return result;
   }
 }
