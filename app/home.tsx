@@ -1,3 +1,3 @@
-import HomeScreen from "./ui/screens/HomeScreen";
+import TabNavigator from "./ui/navigation/TabNavigator";
 
-export default HomeScreen;
+export default TabNavigator;

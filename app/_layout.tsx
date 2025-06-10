@@ -1,11 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
+import { Slot } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import SessionStorage from "./adapters/stores/SessionStorage";
-import TabNavigator from "./ui/navigation/TabNavigator";
-import LoginScreen from "./ui/screens/LoginScreen";
 
 export default function RootLayout() {
     const [fontsLoaded] = useFonts({
@@ -30,7 +29,7 @@ export default function RootLayout() {
 
     return (
         <SafeAreaProvider>
-            {logueado ? <TabNavigator /> : <LoginScreen onLogin={() => setLogueado(true)} />}
+            <Slot />
         </SafeAreaProvider>
     );
 }
