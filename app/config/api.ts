@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
     // Boletos
     BOLETOS: {
         CREATE: `${API_BASE_URL}/boletos`,
+        GET_ALL: `${API_BASE_URL}/boletos`,
+        GET_BY_ID: (id: number) => `${API_BASE_URL}/boletos/${id}`,
         GET_BY_USER: (userId: string) => `${API_BASE_URL}/boletos/usuario/${userId}`,
     },
     // Cooperativas

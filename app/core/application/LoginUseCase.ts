@@ -15,7 +15,6 @@ export class LoginUseCase {
 
     async execute(email: string, password: string): Promise<{ user: User; token: string }> {
         const result = await this.loginPort.login(email, password);
-        console.log("Token to be saved:", result.token);
         await SessionStorage.saveSession(result.token);
         return result;
     }

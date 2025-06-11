@@ -4,7 +4,6 @@ export default class SessionStorage {
     static async saveSession(token: string): Promise<void> {
         try {
             await AsyncStorage.setItem("userToken", token);
-            console.log("Token saved successfully:", token);
         } catch (error) {
             console.error("Error saving session:", error);
         }
