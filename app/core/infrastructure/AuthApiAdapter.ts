@@ -10,4 +10,19 @@ export class AuthApiAdapter implements LoginPort {
         // Si la API retorna datos de usuario junto con el token, ajusta el mapeo aquí
         return { user: result.user ?? {}, token: result.token };
     }
+
+    async register(email: string, password: string): Promise<{ user: User; token: string }> {
+        const result = await AuthService.register({
+            identificacion: "1234567890", // Proveer valores de ejemplo o dinámicos
+            primer_nombre: "Nombre",
+            segundo_nombre: "",
+            primer_apellido: "Apellido",
+            segundo_apellido: "",
+            correo: email,
+            password: password,
+            telefono: "123456789",
+            direccion: "Dirección de ejemplo"
+        });
+        return { user: result.user ?? {}, token: result.token };
+    }
 }

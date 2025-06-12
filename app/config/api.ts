@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const IP = "10.80.3.144";
+export const IP = "10.80.3.106";
 export const API_BASE_URL = `http://${IP}:3000/api`;
 
 // Endpoints de la API
@@ -23,6 +23,8 @@ export const API_ENDPOINTS = {
     // Boletos
     BOLETOS: {
         CREATE: `${API_BASE_URL}/boletos`,
+        GET_ALL: `${API_BASE_URL}/boletos`,
+        GET_BY_ID: (id: number) => `${API_BASE_URL}/boletos/${id}`,
         GET_BY_USER: (userId: string) => `${API_BASE_URL}/boletos/usuario/${userId}`,
     },
     // Cooperativas

@@ -28,7 +28,7 @@ export default function TabNavigator() {
                     borderTopWidth: 1,
                     borderTopColor: "#e5e5e5",
                 },
-                headerShown: false,
+                headerShown: true,
                 tabBarHideOnKeyboard: true,
             }}
         >

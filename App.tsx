@@ -10,10 +10,14 @@ export default function App() {
 
     useEffect(() => {
         const checkSession = async () => {
+            console.log("Iniciando verificación de sesión..."); // Mensaje inicial
             const token = await SessionStorage.getSession();
+            console.log("Token recuperado al iniciar la app:", token); // Verificar el token recuperado
             if (token) {
+                console.log("Token válido encontrado. Redirigiendo al home...");
                 router.replace("/home");
             } else {
+                console.log("No se encontró token. Mostrando pantalla de inicio de sesión.");
                 setIsLoading(false);
             }
         };
