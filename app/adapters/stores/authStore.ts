@@ -11,7 +11,7 @@ interface AuthState {
     token: string | null;
     isAuthenticated: boolean;
     loginWithCredentials: (email: string, password: string) => Promise<void>;
-    registerWithCredentials: (email: string, password: string) => Promise<void>;
+    registerWithCredentials: (data: { identificacion: string; primer_nombre: string; segundo_nombre: string; primer_apellido: string; segundo_apellido: string; correo: string; password: string; telefono: string; direccion: string; }) => Promise<void>;
     logout: () => void;
 }
 
@@ -42,8 +42,8 @@ export const useAuthStore = create<AuthState>()(
                 set({ user, token, isAuthenticated: true });
             },
 
-            registerWithCredentials: async (email, password) => {
-                const { user, token } = await loginUseCase.executeRegister(email, password);
+            registerWithCredentials: async (data) => {
+                const { user, token } = await loginUseCase.executeRegister(data);
                 set({ user, token, isAuthenticated: true });
             },
 

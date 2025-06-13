@@ -22,6 +22,14 @@ export default function RegisterScreen() {
     const [error, setError] = useState<string | null>(null);
     const registerWithCredentials = useAuthStore((state) => state.registerWithCredentials);
 
+    const [identificacion, setIdentificacion] = useState("");
+    const [primerNombre, setPrimerNombre] = useState("");
+    const [segundoNombre, setSegundoNombre] = useState("");
+    const [primerApellido, setPrimerApellido] = useState("");
+    const [segundoApellido, setSegundoApellido] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [direccion, setDireccion] = useState("");
+
     const handleRegister = async () => {
         setError(null);
         if (password !== confirmPassword) {
@@ -29,8 +37,18 @@ export default function RegisterScreen() {
             return;
         }
         try {
-            await registerWithCredentials(email, password);
-            router.replace("/home");
+            await registerWithCredentials({
+                identificacion,
+                primer_nombre: primerNombre,
+                segundo_nombre: segundoNombre,
+                primer_apellido: primerApellido,
+                segundo_apellido: segundoApellido,
+                correo: email,
+                password,
+                telefono,
+                direccion,
+            });
+            router.replace("/login");
         } catch (e: any) {
             setError(e.message ?? "Error al registrarse");
         }
@@ -62,7 +80,7 @@ export default function RegisterScreen() {
                     )}
                     <TextInput
                         className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
-                        placeholder="Ingresa tu Correo"
+                        placeholder="Correo"
                         placeholderTextColor="#9ca3af"
                         value={email}
                         onChangeText={setEmail}
@@ -70,7 +88,7 @@ export default function RegisterScreen() {
                     <View className="relative w-80">
                         <TextInput
                             className="h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
-                            placeholder="Ingresa tu Contraseña"
+                            placeholder="Contraseña"
                             placeholderTextColor="#9ca3af"
                             secureTextEntry={!showPassword}
                             value={password}
@@ -94,6 +112,55 @@ export default function RegisterScreen() {
                         secureTextEntry={!showPassword}
                         value={confirmPassword}
                         onChangeText={setConfirmPassword}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Identificación"
+                        placeholderTextColor="#9ca3af"
+                        value={identificacion}
+                        onChangeText={setIdentificacion}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Primer Nombre"
+                        placeholderTextColor="#9ca3af"
+                        value={primerNombre}
+                        onChangeText={setPrimerNombre}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Segundo Nombre"
+                        placeholderTextColor="#9ca3af"
+                        value={segundoNombre}
+                        onChangeText={setSegundoNombre}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Primer Apellido"
+                        placeholderTextColor="#9ca3af"
+                        value={primerApellido}
+                        onChangeText={setPrimerApellido}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Segundo Apellido"
+                        placeholderTextColor="#9ca3af"
+                        value={segundoApellido}
+                        onChangeText={setSegundoApellido}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Teléfono"
+                        placeholderTextColor="#9ca3af"
+                        value={telefono}
+                        onChangeText={setTelefono}
+                    />
+                    <TextInput
+                        className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
+                        placeholder="Dirección"
+                        placeholderTextColor="#9ca3af"
+                        value={direccion}
+                        onChangeText={setDireccion}
                     />
                     <TouchableOpacity
                         className="w-56 h-14 bg-yellow-400 justify-center items-center rounded-xl mb-5"

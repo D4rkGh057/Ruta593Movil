@@ -3,7 +3,17 @@ import { User } from "../domain/User";
 
 export interface LoginPort {
     login(email: string, password: string): Promise<{ user: User; token: string }>;
-    register(email: string, password: string): Promise<{ user: User; token: string }>;
+    register(data: {
+        identificacion: string;
+        primer_nombre: string;
+        segundo_nombre: string;
+        primer_apellido: string;
+        segundo_apellido: string;
+        correo: string;
+        password: string;
+        telefono: string;
+        direccion: string;
+    }): Promise<{ user: User; token: string }>;
 }
 
 export class LoginUseCase {
@@ -19,8 +29,18 @@ export class LoginUseCase {
         return result;
     }
 
-    async executeRegister(email: string, password: string): Promise<{ user: User; token: string }> {
-        const result = await this.loginPort.register(email, password);
+    async executeRegister(data: {
+        identificacion: string;
+        primer_nombre: string;
+        segundo_nombre: string;
+        primer_apellido: string;
+        segundo_apellido: string;
+        correo: string;
+        password: string;
+        telefono: string;
+        direccion: string;
+    }): Promise<{ user: User; token: string }> {
+        const result = await this.loginPort.register(data);
         console.log("Token to be saved:", result.token);
         await SessionStorage.saveSession(result.token);
         return result;

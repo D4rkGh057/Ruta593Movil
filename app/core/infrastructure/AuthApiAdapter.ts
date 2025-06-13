@@ -11,18 +11,18 @@ export class AuthApiAdapter implements LoginPort {
         return { user: result.user ?? {}, token: result.token };
     }
 
-    async register(email: string, password: string): Promise<{ user: User; token: string }> {
-        const result = await AuthService.register({
-            identificacion: "1234567890", // Proveer valores de ejemplo o dinámicos
-            primer_nombre: "Nombre",
-            segundo_nombre: "",
-            primer_apellido: "Apellido",
-            segundo_apellido: "",
-            correo: email,
-            password: password,
-            telefono: "123456789",
-            direccion: "Dirección de ejemplo"
-        });
+    async register(data: {
+        identificacion: string;
+        primer_nombre: string;
+        segundo_nombre: string;
+        primer_apellido: string;
+        segundo_apellido: string;
+        correo: string;
+        password: string;
+        telefono: string;
+        direccion: string;
+    }): Promise<{ user: User; token: string }> {
+        const result = await AuthService.register(data);
         return { user: result.user ?? {}, token: result.token };
     }
 }
