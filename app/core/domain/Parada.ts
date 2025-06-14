@@ -1,6 +1,6 @@
 export interface Parada {
-    parada_id: number;
+    parada_id?: number;
     ciudad: string;
     activo: boolean;
-    fecha_creacion: string;
+    fecha_creacion?: string;
 }

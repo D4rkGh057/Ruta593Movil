@@ -11,47 +11,21 @@ import {
     View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
-interface Cooperativa {
-    cooperativa_id: number;
-    nombre: string;
-    telefono: string;
-    correo: string;
-    logo: string;
-    ruc: string;
-    direccion: string;
-}
+import { Cooperativa } from "../../core/domain/Cooperativa";
+import { Frecuencia } from "../../core/domain/Frecuencia";
 
 interface BusSearchResultProps {
-    frecuencia: {
-        frecuencia_id: number;
-        hora_salida: string;
-        hora_llegada: string;
-        origen: string;
-        destino: string;
-        total: number;
-        es_directo: boolean;
-        cooperativa_id?: number;
-        bus?: {
-            numero_bus: number;
-            total_asientos_normales: number;
-            total_asientos_vip: number;
-        };
-        conductor?: {
-            primer_nombre: string;
-            primer_apellido: string;
-        };
-    };
+    frecuencia: Frecuencia;
     onSelect: () => void;
     cooperativa?: Cooperativa;
 }
 
 const BusCard: React.FC<BusSearchResultProps> = ({ frecuencia, onSelect, cooperativa }) => {
     // Generamos una imagen aleatoria para cada bus usando Picsum
-    const busImageUrl = `https://picsum.photos/200/200?random=${frecuencia.frecuencia_id}`;
+    const busImageUrl = `https://picsum.photos/200/200?random=${frecuencia.frecuencia_id || 1}`;
     // Logo de la compañía (usando el logo de la cooperativa o una imagen de respaldo)
     const companyLogoUrl =
-        cooperativa?.logo || `https://picsum.photos/100/100?random=${frecuencia.frecuencia_id + 1}`;
+        cooperativa?.logo || `https://picsum.photos/100/100?random=${(frecuencia.frecuencia_id || 1) + 1}`;
 
     return (
         <TouchableOpacity
@@ -151,8 +125,8 @@ const BusCard: React.FC<BusSearchResultProps> = ({ frecuencia, onSelect, coopera
 };
 
 interface BusSearchResultsProps {
-    frecuencias: Array<BusSearchResultProps["frecuencia"]>;
-    onSelectBus: (frecuencia: BusSearchResultProps["frecuencia"]) => void;
+    frecuencias: Frecuencia[];
+    onSelectBus: (frecuencia: Frecuencia) => void;
 }
 
 interface Filters {

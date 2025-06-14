@@ -17,68 +17,14 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { API_ENDPOINTS } from "../../config/api";
+import { Frecuencia } from "../../core/domain/Frecuencia";
+import { Parada } from "../../core/domain/Parada";
+import { FrecuenciaService } from "../../core/infrastructure/FrecuenciaService";
+import { ParadaService } from "../../core/infrastructure/ParadaService";
 import { NOVEDADES_MOCK, OFERTAS_MOCK } from "../../data/mockData";
 import BusSearchResults from "../components/BusSearchResults";
 import { NovedadCard } from "../components/NovedadCard";
 import { OfertaCard } from "../components/OfertaCard";
-
-interface Parada {
-    parada_id: number;
-    ciudad: string;
-    activo: boolean;
-    fecha_creacion: string;
-}
-
-interface Frecuencia {
-    frecuencia_id: number;
-    nombre_frecuencia: string;
-    bus_id: number;
-    conductor_id: number;
-    hora_salida: string;
-    hora_llegada: string;
-    origen: string;
-    destino: string;
-    provincia: string;
-    activo: boolean;
-    total: number;
-    nro_aprobacion: string;
-    es_directo: boolean;
-    fecha_creacion: string;
-    conductor?: {
-        usuario_id: number;
-        identificacion: string;
-        primer_nombre: string;
-        segundo_nombre: string;
-        primer_apellido: string;
-        segundo_apellido: string;
-        correo: string;
-        telefono: string;
-        rol: string;
-        direccion: string;
-        fecha_eliminacion: string | null;
-        fecha_creacion: string;
-    };
-    bus?: {
-        bus_id: number;
-        numero_bus: number;
-        placa: string;
-        chasis: string;
-        carroceria: string;
-        total_asientos_normales: number;
-        total_asientos_vip: number;
-        deletedAt: string | null;
-        activo: boolean;
-        fotos: any[];
-        asientos: Array<{
-            asiento_id: number;
-            tipo_asiento: string;
-            numero_asiento: number;
-            fecha_creacion: string;
-        }>;
-    };
-    rutas: any[];
-}
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -100,12 +46,9 @@ export default function HomeScreen() {
     useEffect(() => {
         cargarParadas();
     }, []);
-
     const cargarParadas = async () => {
         try {
-            const response = await fetch(API_ENDPOINTS.PARADAS.GET_ALL);
-            if (!response.ok) throw new Error("Error al cargar paradas");
-            const data = await response.json();
+            const data = await ParadaService.getAllParadas();
             console.log("Datos de paradas:", data);
             setParadas(data);
         } catch (error) {
@@ -119,7 +62,6 @@ export default function HomeScreen() {
 
         setCargando(true);
         setError(null);
-
         try {
             const origenCodificado = encodeURIComponent(origen);
             const destinoCodificado = encodeURIComponent(destino);
@@ -130,39 +72,11 @@ export default function HomeScreen() {
             });
 
             // Primero buscamos por origen
-            const responseOrigen = await fetch(
-                API_ENDPOINTS.FRECUENCIAS.GET_BY_ORIGEN(origenCodificado)
-            );
-            console.log("Response origen status:", responseOrigen.status);
-
-            if (!responseOrigen.ok) {
-                const errorText = await responseOrigen.text();
-                console.log("Error en respuesta origen:", errorText);
-                // Si el error es 400 y el mensaje indica que no hay frecuencias, continuamos con destino
-                if (responseOrigen.status !== 400) {
-                    throw new Error("Error al buscar frecuencias por origen");
-                }
-            }
-
-            const frecuenciasOrigen = responseOrigen.ok ? await responseOrigen.json() : [];
+            const frecuenciasOrigen = await FrecuenciaService.getByOrigen(origen);
             console.log("Frecuencias por origen:", frecuenciasOrigen);
 
             // Filtramos por destino
-            const responseDestino = await fetch(
-                API_ENDPOINTS.FRECUENCIAS.GET_BY_DESTINO(destinoCodificado)
-            );
-            console.log("Response destino status:", responseDestino.status);
-
-            if (!responseDestino.ok) {
-                const errorText = await responseDestino.text();
-                console.log("Error en respuesta destino:", errorText);
-                // Si el error es 400 y el mensaje indica que no hay frecuencias, continuamos
-                if (responseDestino.status !== 400) {
-                    throw new Error("Error al buscar frecuencias por destino");
-                }
-            }
-
-            const frecuenciasDestino = responseDestino.ok ? await responseDestino.json() : [];
+            const frecuenciasDestino = await FrecuenciaService.getByDestino(destino);
             console.log("Frecuencias por destino:", frecuenciasDestino);
 
             // Encontramos las frecuencias que coinciden tanto en origen como en destino
@@ -355,7 +269,7 @@ export default function HomeScreen() {
             setCargando(false);
         }
     };
-    const handleSelectBus = (frecuencia: any) => {
+    const handleSelectBus = (frecuencia: Frecuencia) => {
         router.push({
             pathname: "/confirmacion-reserva",
             params: {
@@ -671,7 +585,7 @@ export default function HomeScreen() {
                         <View className="bg-white rounded-t-3xl p-4 h-3/4">
                             <View className="flex-row justify-between items-center mb-4">
                                 <Text className="text-xl font-bold">
-                                    Seleccionar{" "}
+                                    Seleccionar
                                     {seleccionActual === "origen" ? "origen" : "destino"}
                                 </Text>
                                 <TouchableOpacity onPress={() => setModalVisible(false)}>
@@ -686,7 +600,9 @@ export default function HomeScreen() {
                             ) : (
                                 <FlatList
                                     data={paradas}
-                                    keyExtractor={(item) => item.parada_id.toString()}
+                                    keyExtractor={(item) =>
+                                        item.parada_id?.toString() || Math.random().toString()
+                                    }
                                     renderItem={({ item }) => (
                                         <TouchableOpacity
                                             key={item.parada_id}

@@ -10,7 +10,8 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { API_ENDPOINTS } from "../../config/api";
+import { Frecuencia } from "../../core/domain/Frecuencia";
+import { ReservaService } from "../../core/infrastructure/ReservaService";
 import { BusSeats } from "../components/BusSeats";
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -23,7 +24,7 @@ const InfoModal = ({
 }: {
     visible: boolean;
     onClose: () => void;
-    frecuencia: any;
+    frecuencia: Frecuencia | null;
 }) => {
     return (
         <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={onClose}>
@@ -50,7 +51,9 @@ const InfoModal = ({
                             </View>
                             <View style={styles.infoRow}>
                                 <Text style={styles.infoLabel}>Fecha</Text>
-                                <Text style={styles.infoValue}>{frecuencia?.fecha || "N/A"}</Text>
+                                <Text style={styles.infoValue}>
+                                    {frecuencia?.fecha_creacion || "N/A"}
+                                </Text>
                             </View>
                             <View style={styles.infoRow}>
                                 <Text style={styles.infoLabel}>Hora de salida</Text>
@@ -196,12 +199,7 @@ export function ConfirmacionReservaScreen() {
         const fetchReservedSeats = async () => {
             try {
                 // Obtener todas las reservas para verificar asientos ocupados
-                const response = await fetch(API_ENDPOINTS.RESERVAS.GET_ALL);
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-
-                const data = await response.json();
+                const data = await ReservaService.getAllReservas();
 
                 // Verificar que data es un array y tiene la estructura esperada
                 if (Array.isArray(data)) {
