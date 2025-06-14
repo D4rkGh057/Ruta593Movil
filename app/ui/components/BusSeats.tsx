@@ -1,27 +1,27 @@
-import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface SeatProps {
     number: number;
-    status: 'available' | 'reserved' | 'selected';
+    status: "available" | "reserved" | "selected";
     onSelect: (number: number) => void;
 }
 
 const Seat: React.FC<SeatProps> = ({ number, status, onSelect }) => {
     const seatColor = {
-        available: '#008f39',  // verde
-        reserved: '#ff0000',   // rojo
-        selected: '#ffd700'    // amarillo
+        available: "#008f39", // verde
+        reserved: "#ff0000", // rojo
+        selected: "#ffd700", // amarillo
     }[status];
 
     return (
-        <TouchableOpacity 
-            onPress={() => status === 'available' && onSelect(number)}
-            style={[styles.seat, { borderColor: seatColor }]}
-            disabled={status === 'reserved'}
+        <TouchableOpacity
+            onPress={() => status === "available" && onSelect(number)}
+            style={styles.seat}
+            disabled={status === "reserved"}
         >
-            <Ionicons name="person" size={24} color={seatColor} />
+            <MaterialCommunityIcons name="seat-outline" size={28} color={seatColor} />
         </TouchableOpacity>
     );
 };
@@ -37,55 +37,103 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
     totalSeats,
     reservedSeats,
     selectedSeats,
-    onSeatSelect
+    onSeatSelect,
 }) => {
-    const renderSeats = () => {
-        const seats = [];
-        for (let i = 1; i <= totalSeats; i++) {
-            const status = reservedSeats.includes(i) 
-                ? 'reserved' 
-                : selectedSeats.includes(i) 
-                    ? 'selected' 
-                    : 'available';
-            
-            seats.push(
-                <Seat 
-                    key={i} 
-                    number={i} 
-                    status={status} 
-                    onSelect={onSeatSelect}
-                />
+    const buildRows = () => {
+        const rows: React.ReactNode[] = [];
+        let seatNumber = 1;
+        const totalRows = Math.ceil(totalSeats / 4);
+
+        // Agregar la fila del conductor primero
+        rows.push(
+            <View key="driver-row" style={styles.driverRow}>
+                <View style={styles.steeringSection}>
+                    <MaterialCommunityIcons name="steering" size={32} color="#666" />
+                </View>
+                <View style={styles.emptySection} />
+            </View>
+        );
+
+        for (let r = 0; r < totalRows; r++) {
+            const seatsInRow: React.ReactNode[] = [];
+
+            for (let c = 0; c < 4 && seatNumber <= totalSeats; c++) {
+                // Insert aisle visual gap after two seats (index 0 and 1 are left side)
+                if (c === 2) {
+                    seatsInRow.push(<View key={`aisle-${r}`} style={styles.aisle} />);
+                }
+
+                const status: "available" | "reserved" | "selected" = reservedSeats.includes(
+                    seatNumber
+                )
+                    ? "reserved"
+                    : selectedSeats.includes(seatNumber)
+                    ? "selected"
+                    : "available";
+
+                seatsInRow.push(
+                    <Seat
+                        key={seatNumber}
+                        number={seatNumber}
+                        status={status}
+                        onSelect={onSeatSelect}
+                    />
+                );
+                seatNumber++;
+            }
+
+            rows.push(
+                <View key={`row-${r}`} style={styles.row}>
+                    {seatsInRow}
+                </View>
             );
         }
-        return seats;
+
+        return rows;
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.steeringWheel}>
-                <Ionicons name="car" size={32} color="#666" />
+        <View style={styles.mainContainer}>
+            {/* Tarjeta del bus */}
+            <View style={styles.container}>
+                <View style={styles.seatsContainer}>{buildRows()}</View>
             </View>
-            <View style={styles.seatsContainer}>
-                <View style={styles.leftColumn}>
-                    {renderSeats().slice(0, totalSeats / 2)}
-                </View>
-                <View style={styles.aisle} />
-                <View style={styles.rightColumn}>
-                    {renderSeats().slice(totalSeats / 2)}
-                </View>
-            </View>
-            <View style={styles.legendContainer}>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendBox, { backgroundColor: '#008f39' }]} />
-                    <Text>Disponible (COP 170.000.00)</Text>
-                </View>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendBox, { backgroundColor: '#ff0000' }]} />
-                    <Text>Ya está reservado</Text>
-                </View>
-                <View style={styles.legendItem}>
-                    <View style={[styles.legendBox, { backgroundColor: '#ffd700' }]} />
-                    <Text>Seleccionado</Text>
+
+            {/* Tarjeta de tipos de asientos */}
+            <View style={styles.legendCard}>
+                <Text style={styles.legendTitle}>Conozca sus tipos de asientos</Text>
+                <View style={styles.legendDivider} />
+                <View style={styles.legendContainer}>
+                    <View style={styles.legendItem}>
+                        <MaterialCommunityIcons
+                            name="seat-outline"
+                            size={24}
+                            color="#008f39"
+                            style={{ marginRight: 10 }}
+                        />
+                        <View>
+                            <Text style={styles.legendItemTitle}>Disponible</Text>
+                            <Text style={styles.legendItemPrice}>COP 170.000.00</Text>
+                        </View>
+                    </View>
+                    <View style={styles.legendItem}>
+                        <MaterialCommunityIcons
+                            name="seat-outline"
+                            size={24}
+                            color="#ff0000"
+                            style={{ marginRight: 10 }}
+                        />
+                        <Text style={styles.legendItemTitle}>Ya está reservado</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                        <MaterialCommunityIcons
+                            name="seat-outline"
+                            size={24}
+                            color="#ffd700"
+                            style={{ marginRight: 10 }}
+                        />
+                        <Text style={styles.legendItemTitle}>Seleccionado</Text>
+                    </View>
                 </View>
             </View>
         </View>
@@ -93,50 +141,112 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
 };
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        backgroundColor: '#fff',
-        borderRadius: 10,
+    mainContainer: {
+        width: "100%",
+        gap: 20,
     },
-    steeringWheel: {
-        alignItems: 'center',
-        marginBottom: 20,
+    container: {
+        backgroundColor: "#fff",
+        borderRadius: 25,
+        borderWidth: 2,
+        borderColor: "#ddd",
+        width: "90%",
+        alignSelf: "center",
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
     seatsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginBottom: 20,
+        width: "100%",
+        flexDirection: "column",
+        alignItems: "center",
+        paddingVertical: 15,
     },
-    leftColumn: {
-        marginRight: 10,
+    driverRow: {
+        flexDirection: "row",
+        width: "100%",
+        justifyContent: "space-between",
+        paddingHorizontal: 20,
+        marginBottom: 25,
+        paddingTop: 20,
+        borderTopLeftRadius: 23,
+        borderTopRightRadius: 23,
+        backgroundColor: "#f5f5f5",
     },
-    rightColumn: {
-        marginLeft: 10,
+    steeringSection: {
+        flex: 1,
+        alignItems: "flex-start",
+        paddingLeft: 20,
+    },
+    emptySection: {
+        flex: 3,
     },
     aisle: {
-        width: 20,
+        width: 40,
     },
     seat: {
+        margin: 8,
         width: 40,
-        height: 40,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    row: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 15,
+        paddingHorizontal: 20,
+    },
+    // Estilos para la tarjeta de leyenda
+    legendCard: {
+        backgroundColor: "#fff",
+        borderRadius: 15,
         borderWidth: 2,
-        borderRadius: 8,
-        margin: 5,
-        justifyContent: 'center',
-        alignItems: 'center',
+        borderColor: "#ddd",
+        width: "90%",
+        alignSelf: "center",
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        padding: 15,
+    },
+    legendTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+        marginBottom: 10,
+        color: "#333",
+    },
+    legendDivider: {
+        height: 1,
+        backgroundColor: "#ddd",
+        marginVertical: 10,
     },
     legendContainer: {
-        marginTop: 20,
+        gap: 15,
     },
     legendItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+        flexDirection: "row",
+        alignItems: "center",
     },
-    legendBox: {
-        width: 20,
-        height: 20,
-        borderRadius: 4,
-        marginRight: 10,
+    legendItemTitle: {
+        fontSize: 16,
+        color: "#333",
+    },
+    legendItemPrice: {
+        fontSize: 14,
+        color: "#666",
+        marginTop: 2,
     },
 });
