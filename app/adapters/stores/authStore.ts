@@ -11,7 +11,17 @@ interface AuthState {
     token: string | null;
     isAuthenticated: boolean;
     loginWithCredentials: (email: string, password: string) => Promise<void>;
-    registerWithCredentials: (data: { identificacion: string; primer_nombre: string; segundo_nombre: string; primer_apellido: string; segundo_apellido: string; correo: string; password: string; telefono: string; direccion: string; }) => Promise<void>;
+    registerWithCredentials: (data: {
+        identificacion: string;
+        primer_nombre: string;
+        segundo_nombre: string;
+        primer_apellido: string;
+        segundo_apellido: string;
+        correo: string;
+        password: string;
+        telefono: string;
+        direccion: string;
+    }) => Promise<void>;
     logout: () => void;
 }
 
@@ -59,7 +69,9 @@ export const useAuthStore = create<AuthState>()(
             storage: zustandStorageAdapter, // adaptador compatible
             onRehydrateStorage: () => (state) => {
                 if (!state) {
-                    console.warn("No se pudo rehidratar el estado desde el almacenamiento persistente.");
+                    console.warn(
+                        "No se pudo rehidratar el estado desde el almacenamiento persistente."
+                    );
                 }
             },
         }

@@ -195,9 +195,8 @@ export function ConfirmacionReservaScreen() {
     useEffect(() => {
         const fetchReservedSeats = async () => {
             try {
-                // Como no hay un endpoint específico para obtener asientos reservados por frecuencia,
-                // vamos a obtener todas las reservas del usuario actual y filtrar por frecuencia
-                const response = await fetch(`${API_ENDPOINTS.RESERVAS.CREATE}`);
+                // Obtener todas las reservas para verificar asientos ocupados
+                const response = await fetch(API_ENDPOINTS.RESERVAS.GET_ALL);
                 if (!response.ok) {
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
@@ -403,7 +402,8 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         gap: 12,
-    },    infoRow: {
+    },
+    infoRow: {
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
@@ -455,7 +455,8 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         maxHeight: screenHeight * 0.8,
         minHeight: screenHeight * 0.6,
-    },    modalHeader: {
+    },
+    modalHeader: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
@@ -480,7 +481,8 @@ const styles = StyleSheet.create({
         color: "#333",
         flex: 1,
         textAlign: "center",
-    },    closeButton: {
+    },
+    closeButton: {
         padding: 8,
         borderRadius: 20,
         backgroundColor: "#f5f5f5",
@@ -506,7 +508,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 3,
-    },    sectionTitle: {
+    },
+    sectionTitle: {
         fontSize: 18,
         fontWeight: "bold",
         color: "#333",
@@ -543,7 +546,8 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#333",
         marginBottom: 10,
-    },    servicesList: {
+    },
+    servicesList: {
         gap: 12,
         marginTop: 8,
     },
@@ -560,7 +564,8 @@ const styles = StyleSheet.create({
     serviceText: {
         fontSize: 16,
         color: "#666",
-    },    infoText: {
+    },
+    infoText: {
         fontSize: 15,
         color: "#666",
         marginBottom: 12,
@@ -620,7 +625,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         lineHeight: 18,
         fontStyle: "italic",
-    },    // Estilos para otras políticas
+    }, // Estilos para otras políticas
     policyItem: {
         backgroundColor: "#fff",
         padding: 16,

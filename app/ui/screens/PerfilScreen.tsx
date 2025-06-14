@@ -10,10 +10,7 @@ export default function PerfilScreen() {
     };
 
     return (
-        <CenteredInfoScreen 
-            title="Mi Perfil" 
-            subtitle="Gestiona tu información personal"
-        >
+        <CenteredInfoScreen title="Mi Perfil" subtitle="Gestiona tu información personal">
             <Button title="Cerrar Sesión" onPress={handleLogout} />
         </CenteredInfoScreen>
     );

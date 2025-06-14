@@ -75,9 +75,7 @@ export default function RegisterScreen() {
                     >
                         Viajes Óptimos, Horarios Útiles y Eficientes
                     </Text>
-                    {error && (
-                        <Text className="text-red-500 mb-2">{error}</Text>
-                    )}
+                    {error && <Text className="text-red-500 mb-2">{error}</Text>}
                     <TextInput
                         className="w-80 h-14 border border-gray-300 rounded-xl p-4 mb-2 text-black"
                         placeholder="Correo"
@@ -170,10 +168,7 @@ export default function RegisterScreen() {
                             Registrarse
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        className="mt-5"
-                        onPress={() => router.push("/login")}
-                    >
+                    <TouchableOpacity className="mt-5" onPress={() => router.push("/login")}>
                         <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
                             ¿Ya tienes una cuenta? Inicia Sesión
                         </Text>

@@ -93,10 +93,7 @@ export default function LoginScreen({ onLogin }: Readonly<{ onLogin?: () => void
                             Iniciar Sesión
                         </Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        className="mt-5"
-                        onPress={() => router.push("/register")}
-                    >
+                    <TouchableOpacity className="mt-5" onPress={() => router.push("/register")}>
                         <Text className="text-blue-800" style={{ fontFamily: "Inter" }}>
                             ¿Aún no te registras? Crea una Cuenta
                         </Text>

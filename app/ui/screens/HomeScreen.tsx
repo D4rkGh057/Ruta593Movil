@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -354,12 +354,13 @@ export default function HomeScreen() {
         } finally {
             setCargando(false);
         }
-    };    const handleSelectBus = (frecuencia: any) => {
+    };
+    const handleSelectBus = (frecuencia: any) => {
         router.push({
             pathname: "/confirmacion-reserva",
-            params: { 
-                frecuencia: JSON.stringify(frecuencia) 
-            }
+            params: {
+                frecuencia: JSON.stringify(frecuencia),
+            },
         });
     };
 

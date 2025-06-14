@@ -1,2 +1,2 @@
-import { ConfirmacionReservaScreen } from './ui/screens/ConfirmacionReservaScreen';
+import { ConfirmacionReservaScreen } from "./ui/screens/ConfirmacionReservaScreen";
 export default ConfirmacionReservaScreen;

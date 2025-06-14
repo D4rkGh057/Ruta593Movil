@@ -19,7 +19,8 @@ export class AuthService {
                     statusCode?: number;
                 } | null;
 
-                const errorMessage = error?.message ?? "Credenciales inválidas o usuario no encontrado";
+                const errorMessage =
+                    error?.message ?? "Credenciales inválidas o usuario no encontrado";
                 throw new Error(errorMessage);
             }
 
