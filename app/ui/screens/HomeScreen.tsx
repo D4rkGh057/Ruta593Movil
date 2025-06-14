@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -80,6 +81,7 @@ interface Frecuencia {
 }
 
 export default function HomeScreen() {
+    const router = useRouter();
     const insets = useSafeAreaInsets();
     const [origen, setOrigen] = useState("Seleccionar origen");
     const [destino, setDestino] = useState("Seleccionar destino");
@@ -352,27 +354,13 @@ export default function HomeScreen() {
         } finally {
             setCargando(false);
         }
-    };
-
-    const handleSelectBus = (frecuencia: any) => {
-        // Aquí manejaremos la selección del bus
-        Alert.alert(
-            "Bus seleccionado",
-            `Has seleccionado el bus #${frecuencia.bus?.numero_bus}. ¿Deseas continuar con la reserva?`,
-            [
-                {
-                    text: "Cancelar",
-                    style: "cancel",
-                },
-                {
-                    text: "Continuar",
-                    onPress: () => {
-                        // Aquí implementaremos la navegación a la pantalla de reserva
-                        console.log("Continuar con la reserva", frecuencia);
-                    },
-                },
-            ]
-        );
+    };    const handleSelectBus = (frecuencia: any) => {
+        router.push({
+            pathname: "/confirmacion-reserva",
+            params: { 
+                frecuencia: JSON.stringify(frecuencia) 
+            }
+        });
     };
 
     const abrirSelectorParadas = (tipo: "origen" | "destino") => {
