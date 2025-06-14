@@ -7,7 +7,6 @@ interface SeatProps {
     status: "available" | "reserved" | "selected";
     onSelect: (number: number) => void;
 }
-
 const Seat: React.FC<SeatProps> = ({ number, status, onSelect }) => {
     const seatColor = {
         available: "#008f39", // verde
@@ -17,7 +16,7 @@ const Seat: React.FC<SeatProps> = ({ number, status, onSelect }) => {
 
     return (
         <TouchableOpacity
-            onPress={() => status === "available" && onSelect(number)}
+            onPress={() => (status === "available" || status === "selected") && onSelect(number)}
             style={styles.seat}
             disabled={status === "reserved"}
         >
