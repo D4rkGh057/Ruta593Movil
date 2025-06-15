@@ -5,6 +5,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function AyudaScreen() {
 const router = useRouter();
+const hasTrips = false; // Cambiar a true si hay viajes disponibles
 
     return (
         <View style={styles.container}>
@@ -15,8 +16,12 @@ const router = useRouter();
                         <Text style={styles.linkText}>Ver todo</Text>
                     </TouchableOpacity>
                 </View>
-                <Image source={require("../../../assets/fantasma.png")} style={styles.image} />
-                <Text style={styles.noDataText}>No hay viajes recientes</Text>
+                {!hasTrips && (
+                  <>
+                    <Image source={require("../../../assets/fantasma.png")} style={styles.image} />
+                    <Text style={styles.noDataText}>No hay viajes recientes</Text>
+                  </>
+                )}
             </View>
 
             <View style={styles.section}>
