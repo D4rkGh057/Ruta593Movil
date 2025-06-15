@@ -1,5 +1,5 @@
 // Servicio para comprobantes de pago
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class ComprobantePagoService {
     static async getAllComprobantes() {

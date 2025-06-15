@@ -1,5 +1,5 @@
 // Servicio para rutas
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class RutaService {
     static async getAllRutas() {

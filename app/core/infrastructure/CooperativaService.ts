@@ -1,5 +1,5 @@
 // Servicio para cooperativas
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class CooperativaService {
     static async getAllCooperativas() {

@@ -1,5 +1,5 @@
 // Servicio para reservas
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class ReservaService {
     static async getAllReservas() {

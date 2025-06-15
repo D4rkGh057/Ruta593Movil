@@ -1,5 +1,5 @@
 // Servicio para usuarios
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class UserService {
     static async getUserById(userId: string) {

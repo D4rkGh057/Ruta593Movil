@@ -1,5 +1,5 @@
 // Servicio para facturas
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class FacturaService {
     static async getAllFacturas() {

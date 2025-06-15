@@ -1,5 +1,5 @@
 // Servicio para paradas
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class ParadaService {
     static async getAllParadas() {

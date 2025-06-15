@@ -1,4 +1,4 @@
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 import { User } from "../domain/User";
 
 // Interfaces para las respuestas de la API

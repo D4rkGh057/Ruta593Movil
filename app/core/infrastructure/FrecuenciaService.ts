@@ -1,5 +1,5 @@
 // Servicio para frecuencias
-import { API_ENDPOINTS } from "../../config/api";
+import { API_ENDPOINTS } from "../../../config/api";
 
 export class FrecuenciaService {
     static async getByOrigen(origen: string) {
