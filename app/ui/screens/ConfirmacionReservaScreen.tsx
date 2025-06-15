@@ -287,13 +287,12 @@ export function ConfirmacionReservaScreen() {
                     reservedSeats={reservedSeats}
                     selectedSeats={selectedSeats}
                     onSeatSelect={handleSeatSelect}
-                />
-                {selectedSeats.length > 0 && (
+                />                {selectedSeats.length > 0 && (
                     <TouchableOpacity
                         style={styles.continueButton}
                         onPress={() => {
                             router.push({
-                                pathname: "/boletos",
+                                pathname: "/payment",
                                 params: {
                                     frecuencia: JSON.stringify(frecuencia),
                                     asientos: JSON.stringify(selectedSeats),
@@ -302,7 +301,7 @@ export function ConfirmacionReservaScreen() {
                         }}
                     >
                         <Text style={styles.continueButtonText}>
-                            Continuar con la reserva ({selectedSeats.length} asientos)
+                            Continuar con el pago ({selectedSeats.length} asientos)
                         </Text>
                     </TouchableOpacity>
                 )}

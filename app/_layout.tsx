@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import SessionStorage from "./adapters/stores/SessionStorage";
+import { usePaymentLinking } from "./hooks/usePaymentLinking";
 
 export default function RootLayout() {
     const [fontsLoaded] = useFonts({
@@ -40,6 +41,9 @@ export default function RootLayout() {
         };
         checkSession();
     }, [pathname, redirected]);
+
+    // Agregar el hook de deep linking para pagos
+    usePaymentLinking();
 
     if (!fontsLoaded || isLoading) return null;
 
