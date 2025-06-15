@@ -21,15 +21,11 @@ export class LoginUseCase {
 
     constructor(loginPort: LoginPort) {
         this.loginPort = loginPort;
-    }
-
-    async execute(email: string, password: string): Promise<{ user: User; token: string }> {
+    }    async execute(email: string, password: string): Promise<{ user: User; token: string }> {
         const result = await this.loginPort.login(email, password);
-        await SessionStorage.saveSession(result.token);
+        await SessionStorage.saveSession(result.token, result.user);
         return result;
-    }
-
-    async executeRegister(data: {
+    }    async executeRegister(data: {
         identificacion: string;
         primer_nombre: string;
         segundo_nombre: string;
@@ -42,7 +38,8 @@ export class LoginUseCase {
     }): Promise<{ user: User; token: string }> {
         const result = await this.loginPort.register(data);
         console.log("Token to be saved:", result.token);
-        await SessionStorage.saveSession(result.token);
+        console.log("User data to be saved:", result.user);
+        await SessionStorage.saveSession(result.token, result.user);
         return result;
     }
 }
