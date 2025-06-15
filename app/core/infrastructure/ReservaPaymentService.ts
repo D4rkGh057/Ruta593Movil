@@ -1,12 +1,11 @@
 // Servicio para manejar el flujo completo de reserva y pago
-import { ReservaService } from './ReservaService';
+import { Boleto } from '../domain/Boleto';
+import { Reserva } from '../domain/Reserva';
 import { BoletoService } from './BoletoService';
 import { ComprobantePagoService } from './ComprobantePagoService';
 import { PayPalService } from './PayPalService';
-import { QRCodeService, QRCodeData } from './QRCodeService';
-import { Boleto } from '../domain/Boleto';
-import { Reserva } from '../domain/Reserva';
-import { ComprobantePago } from '../domain/ComprobantePago';
+import { QRCodeData, QRCodeService } from './QRCodeService';
+import { ReservaService } from './ReservaService';
 
 export interface ReservaPaymentData {
     usuarioId: number;

@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import "nativewind";
 import React, { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuthStore } from "../../adapters/stores/authStore";
 import { Boleto } from "../../core/domain/Boleto";
 import { BoletoService } from "../../core/infrastructure/BoletoService";
-import { useAuthStore } from "../../adapters/stores/authStore";
 import { QRCodeModal } from "../components/QRCodeModal";
 
 export default function BoletosScreen() {

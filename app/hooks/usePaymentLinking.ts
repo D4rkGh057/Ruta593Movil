@@ -1,6 +1,6 @@
 import * as Linking from 'expo-linking';
-import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 export function usePaymentLinking() {
     const router = useRouter();

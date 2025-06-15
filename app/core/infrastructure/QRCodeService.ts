@@ -1,5 +1,4 @@
 // Servicio para generar códigos QR
-import { ViewStyle } from 'react-native';
 
 export interface QRCodeData {
     boletoId: string;

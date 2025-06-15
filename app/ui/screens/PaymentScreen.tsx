@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Alert,
     ActivityIndicator,
+    Alert,
     Modal,
-    ScrollView
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { ReservaPaymentService, ReservaPaymentData } from '../../core/infrastructure/ReservaPaymentService';
 import { useAuthStore } from '../../adapters/stores/authStore';
 import { Frecuencia } from '../../core/domain/Frecuencia';
+import { ReservaPaymentData, ReservaPaymentService } from '../../core/infrastructure/ReservaPaymentService';
 
 export default function PaymentScreen() {
     const router = useRouter();

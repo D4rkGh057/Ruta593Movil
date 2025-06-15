@@ -1,5 +1,4 @@
 // Servicio para integración con PayPal
-import { Alert } from 'react-native';
 
 // Configuración de PayPal
 export const PAYPAL_CONFIG = {
