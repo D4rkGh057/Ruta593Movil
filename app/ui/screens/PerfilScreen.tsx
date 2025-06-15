@@ -28,11 +28,11 @@ export default function PerfilScreen() {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Mis Detalles</Text>
                 <TouchableOpacity style={styles.item} onPress={() => (navigation as any).navigate("Boletos")}>
-                    <Ionicons name="list" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="list-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Reservaciones</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.item} onPress={() => console.log("Información personal")}>
-                    <Ionicons name="person" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="person-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Información personal</Text>
                 </TouchableOpacity>
             </View>
@@ -40,26 +40,26 @@ export default function PerfilScreen() {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Pagos</Text>
                 <TouchableOpacity style={styles.item} onPress={() => console.log("Métodos de pago")}>
-                    <Ionicons name="card" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="card-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Métodos de pago</Text>
                 </TouchableOpacity>
             </View>
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Más</Text>
                 <TouchableOpacity style={styles.item} onPress={() => (navigation as any).navigate("Ofertas")}>
-                    <Ionicons name="pricetag" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="pricetag-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Ofertas</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.item} onPress={() => console.log("Conoce Ruta593")}>
-                    <Ionicons name="help-circle" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="help-circle-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Conoce Ruta593</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.item} onPress={() => (navigation as any).navigate("Ayuda")}>
-                    <Ionicons name="help" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="help-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Ayuda</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.item} onPress={() => console.log("Configuraciones de la cuenta")}>
-                    <Ionicons name="settings" size={24} color="#000" style={styles.icon} />
+                    <Ionicons name="settings-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Configuraciones de la cuenta</Text>
                 </TouchableOpacity>
             </View>
