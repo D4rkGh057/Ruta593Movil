@@ -1,5 +1,5 @@
 export interface User {
-    usuario_id?: number;
+    usuario_id?: string;
     identificacion: string;
     primer_nombre: string;
     segundo_nombre?: string;

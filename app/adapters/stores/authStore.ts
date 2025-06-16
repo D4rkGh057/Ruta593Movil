@@ -27,7 +27,7 @@ interface AuthState {
     logout: () => void;
     refreshUserProfile: () => Promise<boolean>;
     // Métodos para acceder a datos específicos del usuario
-    getUserId: () => number | undefined;
+    getUserId: () => string | undefined;
     getUserName: () => string;
     getUserEmail: () => string | undefined;
     getUserPhone: () => string | undefined;
@@ -48,17 +48,17 @@ const logUserData = (user: User | null, title: string = 'DATOS DEL USUARIO'): vo
     }
 
     console.log('👤 Información Personal:');
-    console.log(`   ID: ${user.usuario_id || 'No disponible'}`);
-    console.log(`   Identificación: ${user.identificacion || 'No disponible'}`);
-    console.log(`   Nombre completo: ${user.primer_nombre} ${user.segundo_nombre || ''} ${user.primer_apellido} ${user.segundo_apellido || ''}`.trim());
+    console.log(`   ID: ${user.usuario_id ?? 'No disponible'}`);
+    console.log(`   Identificación: ${user.identificacion ?? 'No disponible'}`);
+    console.log(`   Nombre completo: ${user.primer_nombre} ${user.segundo_nombre ?? ''} ${user.primer_apellido} ${user.segundo_apellido ?? ''}`.trim());
     
     console.log('\n📧 Contacto:');
-    console.log(`   Email: ${user.correo || 'No disponible'}`);
-    console.log(`   Teléfono: ${user.telefono || 'No disponible'}`);
-    console.log(`   Dirección: ${user.direccion || 'No disponible'}`);
+    console.log(`   Email: ${user.correo ?? 'No disponible'}`);
+    console.log(`   Teléfono: ${user.telefono ?? 'No disponible'}`);
+    console.log(`   Dirección: ${user.direccion ?? 'No disponible'}`);
     
     console.log('\n⚙️ Sistema:');
-    console.log(`   Rol: ${user.rol || 'No disponible'}`);
+    console.log(`   Rol: ${user.rol ?? 'No disponible'}`);
     console.log(`   Estado: ${user.activo ? 'Activo' : 'Inactivo'}`);
     console.log(`   Fecha creación: ${user.fecha_creacion ? new Date(user.fecha_creacion).toLocaleDateString() : 'No disponible'}`);
     
@@ -85,6 +85,7 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             isAuthenticated: false,            loginWithCredentials: async (email, password) => {
                 const { user, token } = await loginUseCase.execute(email, password);
+                console.log('loginWithCredentials - Datos del usuario:', user);
                 
                 // Verificar que los datos del usuario sean válidos
                 if (user && Object.keys(user).length > 0 && user.primer_nombre) {
@@ -128,6 +129,7 @@ export const useAuthStore = create<AuthState>()(
             refreshUserProfile: async (): Promise<boolean> => {
                 try {
                     const currentState = get();
+                    console.log('refreshUserProfile - Estado actual:', currentState);
                     if (!currentState.token) {
                         console.warn('No hay token para refrescar perfil');
                         return false;
@@ -135,22 +137,23 @@ export const useAuthStore = create<AuthState>()(
                     
                     console.log('Refrescando perfil del usuario...');
                     const profileData = await AuthService.getProfile(currentState.token);
+                    console.log('refreshUserProfile - Datos del perfil:', profileData);
                     
                     const updatedUser: User = {
-                        usuario_id: profileData.id,
-                        identificacion: profileData.identificacion,
-                        primer_nombre: profileData.primer_nombre,
-                        segundo_nombre: profileData.segundo_nombre || '',
-                        primer_apellido: profileData.primer_apellido,
-                        segundo_apellido: profileData.segundo_apellido || '',
-                        correo: profileData.correo,
-                        telefono: profileData.telefono || '',
-                        direccion: profileData.direccion || '',
-                        rol: currentState.user?.rol || 'usuario_normal',
-                        fecha_creacion: currentState.user?.fecha_creacion || new Date().toISOString(),
+                        usuario_id: profileData.id?.toString(),
+                        identificacion: profileData.identificacion ?? '',
+                        primer_nombre: profileData.primer_nombre ?? '',
+                        segundo_nombre: profileData.segundo_nombre ?? '',
+                        primer_apellido: profileData.primer_apellido ?? '',
+                        segundo_apellido: profileData.segundo_apellido ?? '',
+                        correo: profileData.correo ?? '',
+                        telefono: profileData.telefono ?? '',
+                        direccion: profileData.direccion ?? '',
+                        rol: currentState.user?.rol ?? 'usuario_normal',
+                        fecha_creacion: currentState.user?.fecha_creacion ?? new Date().toISOString(),
                         activo: true
                     };
-                      console.log('📝 Perfil actualizado exitosamente');
+                    console.log('📝 Perfil actualizado exitosamente');
                     logUserData(updatedUser, 'PERFIL ACTUALIZADO');
                     
                     // Actualizar estado
@@ -167,12 +170,16 @@ export const useAuthStore = create<AuthState>()(
             },
 
             // Métodos para acceder a datos específicos del usuario
-            getUserId: () => get().user?.usuario_id,
+            getUserId: () => {
+                const id = get().user?.usuario_id;
+                console.log('getUserId - usuario_id:', id);
+                return typeof id === 'string' && id.trim() !== '' ? id : undefined;
+            },
             
             getUserName: () => {
                 const user = get().user;
                 if (!user) return '';
-                const fullName = `${user.primer_nombre} ${user.segundo_nombre || ''} ${user.primer_apellido} ${user.segundo_apellido || ''}`.trim();
+                const fullName = `${user.primer_nombre} ${user.segundo_nombre ?? ''} ${user.primer_apellido} ${user.segundo_apellido ?? ''}`.trim();
                 return fullName;
             },
             

@@ -19,12 +19,18 @@ export class BoletoService {
     }
 
     static async getBoletosByUser(userId: string) {
+        console.log('getBoletosByUser - userId:', userId);
         const response = await fetch(API_ENDPOINTS.BOLETOS.GET_BY_USER(userId));
+        console.log('getBoletosByUser - URL:', API_ENDPOINTS.BOLETOS.GET_BY_USER(userId));
+        console.log('getBoletosByUser - Response Status:', response.status);
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
+            console.error('getBoletosByUser - Error:', error);
             throw new Error(error.message ?? "Error al obtener boletos del usuario");
         }
-        return response.json();
+        const data = await response.json();
+        console.log('getBoletosByUser - Data:', data);
+        return data;
     }
 
     static async createBoleto(boletoData: any) {

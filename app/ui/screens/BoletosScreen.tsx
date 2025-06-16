@@ -12,6 +12,7 @@ export default function BoletosScreen() {
     const [loading, setLoading] = useState(true);
     const [selectedBoleto, setSelectedBoleto] = useState<Boleto | null>(null);
     const [showQRModal, setShowQRModal] = useState(false);
+    const [useAllBoletos, setUseAllBoletos] = useState(true); // Variable para alternar entre endpoints
     
     const { getUserId } = useAuthStore();
 
@@ -20,13 +21,13 @@ export default function BoletosScreen() {
             try {
                 const userId = getUserId();
                 let data;
-                
-                if (userId) {
+
+                if (useAllBoletos || !userId) {
+                    // Obtener todos los boletos
+                    data = await BoletoService.getAllBoletos();
+                } else {
                     // Obtener boletos del usuario específico
                     data = await BoletoService.getBoletosByUser(userId.toString());
-                } else {
-                    // Si no hay usuario, obtener todos (fallback)
-                    data = await BoletoService.getAllBoletos();
                 }
                 
                 setBoletos(Array.isArray(data) ? data : []);
@@ -38,7 +39,7 @@ export default function BoletosScreen() {
             }
         };
         fetchBoletos();
-    }, []);
+    }, [useAllBoletos]);
 
     const handleShowQR = (boleto: Boleto) => {
         setSelectedBoleto(boleto);
@@ -68,31 +69,10 @@ export default function BoletosScreen() {
         <View className="flex-1 items-center justify-start bg-gray-100 p-5 relative">
             <TouchableOpacity
                 className="absolute -top-12 right-5 z-10"
-                onPress={() => {
-                    setLoading(true);
-                    const fetchBoletos = async () => {
-                        try {
-                            const userId = getUserId();
-                            let data;
-                            
-                            if (userId) {
-                                data = await BoletoService.getBoletosByUser(userId.toString());
-                            } else {
-                                data = await BoletoService.getAllBoletos();
-                            }
-                            
-                            setBoletos(Array.isArray(data) ? data : []);
-                        } catch (error) {
-                            console.error(error);
-                            setBoletos([]);
-                        } finally {
-                            setLoading(false);
-                        }
-                    };
-                    fetchBoletos();
-                }}
+                onPress={() => setUseAllBoletos((prev) => !prev)}
             >
-                <Ionicons name="refresh-outline" size={24} color="black" />
+                <Ionicons name="swap-horizontal-outline" size={24} color="black" />
+                <Text className="text-base font-bold">Cambiar Endpoint</Text>
             </TouchableOpacity>
             
             {boletos.length > 0 ? (
