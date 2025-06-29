@@ -1,5 +1,5 @@
 // Configuración base de la API
-export const IP = "192.168.1.7";
+export const IP = "192.168.1.13";
 export const API_BASE_URL = `http://${IP}:3000/api`;
 
 // Endpoints de la API
@@ -562,6 +562,61 @@ export const API_ENDPOINTS = {
          */
         GET_BY_USER: (id: number) => `${API_BASE_URL}/factura/usuario/${id}`,
     },
+    //Descuentos
+    DESCUENTOS: {
+        CREATE: `${API_BASE_URL}/descuentos`,
+        /**
+         * POST /api/descuentos - Crear un nuevo descuento
+         * Body: {
+         *   codigo: string,              // Código del descuento (ej: "DESCUENTO10")
+         *   porcentaje: number,          // Porcentaje de descuento (0-100)
+         *   descripcion: string,         // Descripción del descuento
+         *   fecha_inicio: string,        // Fecha de inicio en formato ISO (ej: "2025-01-01T00:00:00Z")
+         *   fecha_fin: string,           // Fecha de fin en formato ISO (ej: "2025-01-31T23:59:59Z")
+         *   activo: boolean              // Estado activo/inactivo del descuento
+         * }
+         * Response 201: Descuento creado con todos los datos
+         */
+        GET_ALL: `${API_BASE_URL}/descuentos`,
+        /**
+         * GET /api/descuentos - Obtener todos los descuentos
+         * Response 200: Array de descuentos con estructura completa
+         * Incluye: codigo, porcentaje, descripcion, fechas, activo
+         */
+        GET_BY_ID: (id: string) => `${API_BASE_URL}/descuentos/${id}`,
+        /**
+         * GET /api/descuentos/{id} - Obtener un descuento por ID
+         * Params: id (number) - ID del descuento
+         * Response 200: Objeto descuento con todos los campos
+         * Response 404: Descuento no encontrado
+         */
+        UPDATE: (id: string) => `${API_BASE_URL}/descuentos/${id}`,
+
+        /**
+         * PATCH /api/descuentos/{id} - Actualizar un descuento
+         * Params: id (number) - ID del descuento a actualizar
+         * Body: {
+         *   codigo?: string,             // Código del descuento
+         *  porcentaje?: number,         // Porcentaje de descuento
+         *  descripcion?: string,        // Descripción del descuento
+         *  fecha_inicio?: string,       // Fecha de inicio (formato ISO)
+         *  fecha_fin?: string,          // Fecha de fin (formato ISO)
+         * activo?: boolean           // Estado activo/inactivo
+         * }
+         * Response 200: Datos actualizados
+         * Response 404: Descuento no encontrado
+         * Uso: Para modificar detalles del descuento existente
+         * Principalmente para cambiar fechas, porcentaje o estado
+         * */
+        DELETE: (id: string) => `${API_BASE_URL}/descuentos/${id}`,
+        /**
+         * DELETE /api/descuentos/{id} - Eliminar un descuento
+         * Params: id (number) - ID del descuento a eliminar
+         * Response 200: Confirmación de eliminación
+         * Response 404: Descuento no encontrado
+         */
+    },
+
     // Boletos
     BOLETOS: {
         /**
