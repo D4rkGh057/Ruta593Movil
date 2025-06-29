@@ -50,7 +50,7 @@ export class ReservaPaymentService {
                 amount: totalAmount,
                 currency: 'USD',
                 description: description,
-                return_url: `ruta593movil://payment/success`,
+                return_url: `home`,
                 cancel_url: `ruta593movil://payment/cancel`
             });
             

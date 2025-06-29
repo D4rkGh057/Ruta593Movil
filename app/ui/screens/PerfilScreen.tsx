@@ -38,13 +38,6 @@ export default function PerfilScreen() {
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Pagos</Text>
-                <TouchableOpacity style={styles.item} onPress={() => console.log("Métodos de pago")}>
-                    <Ionicons name="card-outline" size={24} color="#000" style={styles.icon} />
-                    <Text style={styles.label}>Métodos de pago</Text>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Más</Text>
                 <TouchableOpacity style={styles.item} onPress={() => (navigation as any).navigate("Ofertas")}>
                     <Ionicons name="pricetag-outline" size={24} color="#000" style={styles.icon} />
@@ -57,10 +50,6 @@ export default function PerfilScreen() {
                 <TouchableOpacity style={styles.item} onPress={() => (navigation as any).navigate("Ayuda")}>
                     <Ionicons name="help-outline" size={24} color="#000" style={styles.icon} />
                     <Text style={styles.label}>Ayuda</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.item} onPress={() => console.log("Configuraciones de la cuenta")}>
-                    <Ionicons name="settings-outline" size={24} color="#000" style={styles.icon} />
-                    <Text style={styles.label}>Configuraciones de la cuenta</Text>
                 </TouchableOpacity>
             </View>
 
