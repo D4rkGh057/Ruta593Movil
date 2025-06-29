@@ -25,6 +25,11 @@ export default class SessionStorage {    static async saveSession(token: string,
                     direccion: user.direccion
                 });
                 
+                // Guardar identificación por separado para fácil acceso
+                if (user.identificacion && user.identificacion.trim() !== '') {
+                    await this.saveIdentificacion(user.identificacion);
+                }
+                
                 // Guardar sesión completa como objeto
                 const sessionData: SessionData = { token, user };
                 await AsyncStorage.setItem("userSession", JSON.stringify(sessionData));
@@ -97,9 +102,43 @@ export default class SessionStorage {    static async saveSession(token: string,
             await AsyncStorage.removeItem("userToken");
             await AsyncStorage.removeItem("userData");
             await AsyncStorage.removeItem("userSession");
+            await AsyncStorage.removeItem("userIdentificacion"); // Limpiar identificación
             console.log("Sesión limpiada exitosamente");
         } catch (error) {
             console.error("Error al limpiar la sesión:", error);
+        }
+    }
+
+    // Métodos específicos para manejar la identificación del usuario
+    static async saveIdentificacion(identificacion: string): Promise<void> {
+        try {
+            console.log("💾 Guardando identificación del usuario:", identificacion);
+            await AsyncStorage.setItem("userIdentificacion", identificacion);
+            console.log("✅ Identificación guardada exitosamente en AsyncStorage");
+        } catch (error) {
+            console.error("❌ Error al guardar la identificación:", error);
+        }
+    }
+
+    static async getIdentificacion(): Promise<string | null> {
+        try {
+            console.log("🔍 Recuperando identificación del usuario desde AsyncStorage...");
+            const identificacion = await AsyncStorage.getItem("userIdentificacion");
+            console.log("📄 Identificación recuperada:", identificacion);
+            return identificacion;
+        } catch (error) {
+            console.error("❌ Error al recuperar la identificación:", error);
+            return null;
+        }
+    }
+
+    static async clearIdentificacion(): Promise<void> {
+        try {
+            console.log("🗑️ Limpiando identificación del usuario...");
+            await AsyncStorage.removeItem("userIdentificacion");
+            console.log("✅ Identificación limpiada exitosamente");
+        } catch (error) {
+            console.error("❌ Error al limpiar la identificación:", error);
         }
     }
 }

@@ -21,6 +21,10 @@ interface ProfileResponse {
     id?: number;              // A veces puede venir como 'id'
     usuario_id?: number;      // A veces puede venir como 'usuario_id'
     identificacion?: string;
+    cedula?: string;          // Posible campo alternativo
+    documento?: string;       // Posible campo alternativo
+    dni?: string;             // Posible campo alternativo
+    numero_identificacion?: string; // Posible campo alternativo
     primer_nombre: string;
     segundo_nombre?: string;
     primer_apellido: string;

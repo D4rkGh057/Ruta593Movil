@@ -1,3 +1,4 @@
+import { debugLog, getIdentificacionFallback } from "../../config/userConfig";
 import { LoginPort } from "../application/LoginUseCase";
 import { User } from "../domain/User";
 import { AuthService } from "./AuthService";
@@ -11,10 +12,50 @@ export class AuthApiAdapter implements LoginPort {    async login(email: string,
             
             // Paso 2: Usar el token para obtener el perfil completo del usuario
             const profileData = await AuthService.getProfile(loginResult.token);
-              // Paso 3: Mapear los datos del perfil al formato User
+            
+            // DEBUGGING: Ver exactamente qué campos devuelve la API
+            console.log('🔍 DEBUGGING AuthApiAdapter - profileData completo:', profileData);
+            console.log('🔍 DEBUGGING AuthApiAdapter - Campos individuales:');
+            console.log('  - id:', profileData.id);
+            console.log('  - usuario_id:', profileData.usuario_id);
+            console.log('  - identificacion:', profileData.identificacion);
+            console.log('  - primer_nombre:', profileData.primer_nombre);
+            console.log('  - primer_apellido:', profileData.primer_apellido);
+            console.log('  - correo:', profileData.correo);
+            console.log('  - telefono:', profileData.telefono);
+            console.log('  - direccion:', profileData.direccion);
+            console.log('  - rol:', profileData.rol);
+            
+            // Determinar el campo correcto para identificación
+            const identificacionFinal = profileData.identificacion || 
+                                      profileData.cedula || 
+                                      profileData.documento || 
+                                      profileData.dni || 
+                                      profileData.numero_identificacion || 
+                                      // VALOR QUEMADO: Identificación específica del usuario
+                                      getIdentificacionFallback() || 
+                                      // FALLBACK: Usar los últimos 8 dígitos del usuario_id como identificación
+                                      (profileData.id?.toString().slice(-8)) || 
+                                      '';
+            
+            console.log('🆔 IDENTIFICACIÓN DETERMINADA (CON VALOR QUEMADO):', identificacionFinal);
+            console.log('   - Fuente de identificación:');
+            if (profileData.identificacion) console.log('     ✅ Campo identificacion de la API');
+            else if (profileData.cedula) console.log('     ✅ Campo cedula de la API');
+            else if (profileData.documento) console.log('     ✅ Campo documento de la API');
+            else if (profileData.dni) console.log('     ✅ Campo dni de la API');
+            else if (profileData.numero_identificacion) console.log('     ✅ Campo numero_identificacion de la API');
+            else if (identificacionFinal === getIdentificacionFallback()) {
+                debugLog('USANDO IDENTIFICACIÓN QUEMADA:', getIdentificacionFallback());
+                console.log('     🔥 VALOR QUEMADO:', getIdentificacionFallback());
+            }
+            else if (profileData.id) console.log('     ⚠️ Usando últimos 8 dígitos del ID como fallback');
+            else console.log('     ❌ NO SE ENCONTRÓ IDENTIFICACIÓN');
+
+            // Paso 3: Mapear los datos del perfil al formato User
             const user: User = {
-                usuario_id: profileData.usuario_id || profileData.id, // Manejar ambos campos
-                identificacion: profileData.identificacion || '',
+                usuario_id: (profileData.usuario_id || profileData.id)?.toString(), // Convertir a string y manejar ambos campos
+                identificacion: identificacionFinal, // Usar identificación determinada
                 primer_nombre: profileData.primer_nombre,
                 segundo_nombre: profileData.segundo_nombre || '',
                 primer_apellido: profileData.primer_apellido,
@@ -37,6 +78,22 @@ export class AuthApiAdapter implements LoginPort {    async login(email: string,
                 rol: user.rol,
                 identificacion: user.identificacion
             });
+            
+            // FORZAR GUARDADO DE IDENTIFICACIÓN si existe
+            if (user.identificacion && user.identificacion.trim() !== '') {
+                console.log('💾 FORZANDO guardado de identificación:', user.identificacion);
+                try {
+                    const SessionStorage = (await import('../../adapters/stores/SessionStorage')).default;
+                    await SessionStorage.saveIdentificacion(user.identificacion);
+                    console.log('✅ Identificación guardada exitosamente en login');
+                } catch (error) {
+                    console.error('❌ Error al guardar identificación en login:', error);
+                }
+            } else {
+                console.warn('⚠️ IDENTIFICACIÓN VACÍA O NO ENCONTRADA');
+                console.warn('   - profileData.identificacion:', profileData.identificacion);
+                console.warn('   - Usando ID como fallback:', user.usuario_id);
+            }
             
             return { user, token: loginResult.token };
             
@@ -70,8 +127,8 @@ export class AuthApiAdapter implements LoginPort {    async login(email: string,
                 const profileData = await AuthService.getProfile(registerResult.token);
                 
                 const user: User = {
-                    usuario_id: profileData.id,
-                    identificacion: profileData.identificacion,
+                    usuario_id: (profileData.id)?.toString(),
+                    identificacion: profileData.identificacion || '',
                     primer_nombre: profileData.primer_nombre,
                     segundo_nombre: profileData.segundo_nombre || '',
                     primer_apellido: profileData.primer_apellido,

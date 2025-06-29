@@ -1,13 +1,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { createDefaultDistribution, DistribucionBus, EstructuraBus, parseDistribucionBus } from "../../core/domain/EstructuraBus";
 
 interface SeatProps {
     number: number;
     status: "available" | "reserved" | "selected";
-    onSelect: (number: number) => void;
+    onSelect: (number: number, seatUuid?: string) => void;
+    seatUuid?: string; // UUID del asiento
 }
-const Seat: React.FC<SeatProps> = ({ number, status, onSelect }) => {
+const Seat: React.FC<SeatProps> = ({ number, status, onSelect, seatUuid }) => {
     const seatColor = {
         available: "#008f39", // verde
         reserved: "#ff0000", // rojo
@@ -16,7 +18,7 @@ const Seat: React.FC<SeatProps> = ({ number, status, onSelect }) => {
 
     return (
         <TouchableOpacity
-            onPress={() => (status === "available" || status === "selected") && onSelect(number)}
+            onPress={() => (status === "available" || status === "selected") && onSelect(number, seatUuid)}
             style={styles.seat}
             disabled={status === "reserved"}
         >
@@ -29,7 +31,9 @@ interface BusSeatsProps {
     totalSeats: number;
     reservedSeats: number[];
     selectedSeats: number[];
-    onSeatSelect: (seatNumber: number) => void;
+    onSeatSelect: (seatNumber: number, seatUuid?: string) => void; // Actualizado para incluir UUID
+    estructuraBus?: EstructuraBus; // Estructura del bus opcional
+    busAsientos?: any[]; // Asientos del bus con sus UUIDs
 }
 
 export const BusSeats: React.FC<BusSeatsProps> = ({
@@ -37,11 +41,51 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
     reservedSeats,
     selectedSeats,
     onSeatSelect,
+    estructuraBus,
+    busAsientos,
 }) => {
+    // Obtener la distribución del bus
+    const distribucion: DistribucionBus = React.useMemo(() => {
+        if (estructuraBus && estructuraBus.distribucion) {
+            console.log('🚌 Usando estructura del bus:', estructuraBus);
+            const parsed = parseDistribucionBus(estructuraBus.distribucion);
+            if (parsed) {
+                console.log('🚌 Distribución parseada:', parsed);
+                return parsed;
+            }
+        }
+        
+        console.log('🚌 Usando distribución por defecto para', totalSeats, 'asientos');
+        return createDefaultDistribution(totalSeats);
+    }, [estructuraBus, totalSeats]);
+
+    // Función para obtener el UUID del asiento por su número
+    const getSeatUuid = (seatNumber: number): string | undefined => {
+        if (busAsientos && busAsientos.length > 0) {
+            console.log('🪑 BusSeats.getSeatUuid - Buscando UUID para asiento', seatNumber);
+            console.log('🪑 Asientos disponibles:', busAsientos);
+            
+            const asiento = busAsientos.find(a => 
+                a.numero_asiento === seatNumber || 
+                a.numero === seatNumber ||
+                a.seatNumber === seatNumber
+            );
+            
+            if (asiento) {
+                const uuid = asiento.asiento_id || asiento.id || asiento.uuid;
+                console.log('🪑 UUID encontrado para asiento', seatNumber, ':', uuid);
+                return uuid;
+            } else {
+                console.warn('🪑 No se encontró asiento con número', seatNumber, 'en:', busAsientos);
+            }
+        } else {
+            console.warn('🪑 No hay busAsientos disponibles para buscar UUID');
+        }
+        return undefined;
+    };
+
     const buildRows = () => {
         const rows: React.ReactNode[] = [];
-        let seatNumber = 1;
-        const totalRows = Math.ceil(totalSeats / 4);
 
         // Agregar la fila del conductor primero
         rows.push(
@@ -53,36 +97,40 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
             </View>
         );
 
-        for (let r = 0; r < totalRows; r++) {
+        // Usar la distribución para construir las filas
+        for (let fila = 0; fila < distribucion.filas; fila++) {
             const seatsInRow: React.ReactNode[] = [];
+            const asientosEnFila = distribucion.asientos.filter(asiento => asiento.fila === fila);
 
-            for (let c = 0; c < 4 && seatNumber <= totalSeats; c++) {
-                // Insert aisle visual gap after two seats (index 0 and 1 are left side)
-                if (c === 2) {
-                    seatsInRow.push(<View key={`aisle-${r}`} style={styles.aisle} />);
+            asientosEnFila.forEach((asientoConfig, columna) => {
+                // Agregar pasillo si es necesario
+                if (distribucion.pasillo.includes(columna)) {
+                    seatsInRow.push(<View key={`aisle-${fila}-${columna}`} style={styles.aisle} />);
                 }
 
                 const status: "available" | "reserved" | "selected" = reservedSeats.includes(
-                    seatNumber
+                    asientoConfig.numero
                 )
                     ? "reserved"
-                    : selectedSeats.includes(seatNumber)
+                    : selectedSeats.includes(asientoConfig.numero)
                     ? "selected"
                     : "available";
 
+                const seatUuid = getSeatUuid(asientoConfig.numero);
+
                 seatsInRow.push(
                     <Seat
-                        key={seatNumber}
-                        number={seatNumber}
+                        key={asientoConfig.numero}
+                        number={asientoConfig.numero}
                         status={status}
                         onSelect={onSeatSelect}
+                        seatUuid={seatUuid}
                     />
                 );
-                seatNumber++;
-            }
+            });
 
             rows.push(
-                <View key={`row-${r}`} style={styles.row}>
+                <View key={`row-${fila}`} style={styles.row}>
                     {seatsInRow}
                 </View>
             );

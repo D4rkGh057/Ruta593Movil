@@ -2,6 +2,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { debugLog, getIdentificacionFallback } from "../../config/userConfig";
 import { LoginUseCase } from "../../core/application/LoginUseCase";
 import { User } from "../../core/domain/User";
 import { AuthApiAdapter } from "../../core/infrastructure/AuthApiAdapter";
@@ -33,6 +34,10 @@ interface AuthState {
     getUserPhone: () => string | undefined;
     getUserAddress: () => string | undefined;
     getFullUserData: () => User | null;
+    // Métodos específicos para la identificación
+    getUserIdentificacion: () => string | undefined;
+    saveIdentificacionToStorage: (identificacion: string) => Promise<void>;
+    loadIdentificacionFromStorage: () => Promise<string | null>;
 }
 
 const loginUseCase = new LoginUseCase(new AuthApiAdapter());
@@ -84,8 +89,15 @@ export const useAuthStore = create<AuthState>()(
             user: null,
             token: null,
             isAuthenticated: false,            loginWithCredentials: async (email, password) => {
+                console.log('🚀 INICIANDO LOGIN...');
                 const { user, token } = await loginUseCase.execute(email, password);
-                console.log('loginWithCredentials - Datos del usuario:', user);
+                console.log('📋 LOGIN COMPLETADO - Datos del usuario recibidos:', user);
+                
+                // DEBUGGING: Verificar identificación específicamente
+                console.log('🆔 VERIFICACIÓN DE IDENTIFICACIÓN EN LOGIN:');
+                console.log('   - user.identificacion:', user?.identificacion);
+                console.log('   - user.usuario_id:', user?.usuario_id);
+                console.log('   - Tiene identificación:', !!(user?.identificacion && user.identificacion.trim() !== ''));
                 
                 // Verificar que los datos del usuario sean válidos
                 if (user && Object.keys(user).length > 0 && user.primer_nombre) {
@@ -93,6 +105,21 @@ export const useAuthStore = create<AuthState>()(
                     
                     // Mostrar datos del usuario de forma organizada
                     logUserData(user, 'LOGIN EXITOSO');
+                    
+                    // Guardar identificación en localStorage de forma específica
+                    if (user.identificacion && user.identificacion.trim() !== '') {
+                        await SessionStorage.saveIdentificacion(user.identificacion);
+                        console.log('🆔 Identificación guardada automáticamente en localStorage:', user.identificacion);
+                    } else {
+                        console.warn('⚠️ USUARIO SIN IDENTIFICACIÓN VÁLIDA');
+                        console.warn('   Valor recibido:', user.identificacion);
+                        const fallbackId = getIdentificacionFallback();
+                        console.warn('   Usando identificación quemada como fallback:', fallbackId);
+                        debugLog('APLICANDO FALLBACK DE IDENTIFICACIÓN EN LOGIN');
+                        // Usar identificación quemada como fallback si no hay identificación
+                        await SessionStorage.saveIdentificacion(fallbackId);
+                        console.log('🔥 Identificación quemada guardada como fallback:', fallbackId);
+                    }
                     
                     set({ user, token, isAuthenticated: true });
                 } else {
@@ -109,6 +136,19 @@ export const useAuthStore = create<AuthState>()(
                     
                     // Mostrar datos del usuario de forma organizada
                     logUserData(user, 'REGISTRO EXITOSO');
+                    
+                    // Guardar identificación en localStorage de forma específica
+                    if (user.identificacion && user.identificacion.trim() !== '') {
+                        await SessionStorage.saveIdentificacion(user.identificacion);
+                        console.log('🆔 Identificación guardada automáticamente en localStorage:', user.identificacion);
+                    } else {
+                        console.warn('⚠️ REGISTRO SIN IDENTIFICACIÓN VÁLIDA');
+                        const fallbackId = getIdentificacionFallback();
+                        console.warn('   Usando identificación quemada como fallback:', fallbackId);
+                        debugLog('APLICANDO FALLBACK DE IDENTIFICACIÓN EN REGISTRO');
+                        await SessionStorage.saveIdentificacion(fallbackId);
+                        console.log('🔥 Identificación quemada guardada en registro:', fallbackId);
+                    }
                     
                     set({ user, token, isAuthenticated: true });
                 } else {
@@ -139,6 +179,19 @@ export const useAuthStore = create<AuthState>()(
                     const profileData = await AuthService.getProfile(currentState.token);
                     console.log('refreshUserProfile - Datos del perfil:', profileData);
                     
+                    // DEBUGGING: Ver todos los campos disponibles en profileData
+                    console.log('🔍 DEBUGGING - Campos disponibles en profileData:');
+                    console.log('- id:', profileData.id);
+                    console.log('- usuario_id:', profileData.usuario_id);
+                    console.log('- identificacion:', profileData.identificacion);
+                    console.log('- primer_nombre:', profileData.primer_nombre);
+                    console.log('- primer_apellido:', profileData.primer_apellido);
+                    console.log('- correo:', profileData.correo);
+                    console.log('- telefono:', profileData.telefono);
+                    console.log('- direccion:', profileData.direccion);
+                    console.log('- rol:', profileData.rol);
+                    console.log('🔍 FIN DEBUGGING\n');
+                    
                     const updatedUser: User = {
                         usuario_id: profileData.id?.toString(),
                         identificacion: profileData.identificacion ?? '',
@@ -155,6 +208,12 @@ export const useAuthStore = create<AuthState>()(
                     };
                     console.log('📝 Perfil actualizado exitosamente');
                     logUserData(updatedUser, 'PERFIL ACTUALIZADO');
+                    
+                    // Guardar identificación actualizada en localStorage
+                    if (updatedUser.identificacion && updatedUser.identificacion.trim() !== '') {
+                        await SessionStorage.saveIdentificacion(updatedUser.identificacion);
+                        console.log('🆔 Identificación actualizada en localStorage:', updatedUser.identificacion);
+                    }
                     
                     // Actualizar estado
                     set({ user: updatedUser });
@@ -190,6 +249,34 @@ export const useAuthStore = create<AuthState>()(
             getUserAddress: () => get().user?.direccion,
             
             getFullUserData: () => get().user,
+
+            // Métodos específicos para la identificación
+            getUserIdentificacion: () => {
+                const identificacion = get().user?.identificacion;
+                console.log('getUserIdentificacion - identificacion:', identificacion);
+                return identificacion && identificacion.trim() !== '' ? identificacion : undefined;
+            },
+            
+            saveIdentificacionToStorage: async (identificacion: string) => {
+                try {
+                    await SessionStorage.saveIdentificacion(identificacion);
+                    console.log('✅ Identificación guardada en storage:', identificacion);
+                } catch (error) {
+                    console.error('❌ Error al guardar identificación en storage:', error);
+                }
+            },
+            
+            loadIdentificacionFromStorage: async (): Promise<string | null> => {
+                try {
+                    const identificacion = await SessionStorage.getIdentificacion();
+                    console.log('🔍 Identificación cargada desde storage:', identificacion);
+                    return identificacion;
+                } catch (error) {
+                    console.error('❌ Error al cargar identificación desde storage:', error);
+                    return null;
+                }
+            },
+
         }),        {
             name: "auth-storage", // clave para async-storage
             storage: zustandStorageAdapter, // adaptador compatible

@@ -14,6 +14,12 @@ import { Frecuencia } from "../../core/domain/Frecuencia";
 import { ReservaService } from "../../core/infrastructure/ReservaService";
 import { BusSeats } from "../components/BusSeats";
 
+// Interfaz para asiento seleccionado con UUID
+interface AsientoSeleccionado {
+    numero: number;
+    uuid: string;
+}
+
 const { height: screenHeight } = Dimensions.get("window");
 
 // Componente de Modal Bottom Sheet
@@ -185,15 +191,24 @@ const InfoModal = ({
 export function ConfirmacionReservaScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
-    const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+    const [selectedSeats, setSelectedSeats] = useState<AsientoSeleccionado[]>([]);
     const [reservedSeats, setReservedSeats] = useState<number[]>([]);
     const [showInfoModal, setShowInfoModal] = useState(false);
 
     const frecuencia = React.useMemo(() => {
         if (!params.frecuencia) return null;
-        return typeof params.frecuencia === "string"
+        const freq = typeof params.frecuencia === "string"
             ? JSON.parse(params.frecuencia)
             : params.frecuencia;
+        
+        // Log para debugging de la estructura del bus
+        console.log('🚌 Frecuencia completa:', freq);
+        console.log('🚌 Bus info:', freq?.bus);
+        console.log('🚌 Estructura bus:', freq?.bus?.id_estructura_bus);
+        console.log('🚌 Total asientos normales:', freq?.bus?.total_asientos_normales);
+        console.log('🚌 Total asientos VIP:', freq?.bus?.total_asientos_vip);
+        
+        return freq;
     }, [params.frecuencia]);
     useEffect(() => {
         const fetchReservedSeats = async () => {
@@ -208,9 +223,9 @@ export function ConfirmacionReservaScreen() {
                             (reserva) =>
                                 reserva &&
                                 reserva.frecuencia_id === frecuencia?.frecuencia_id &&
-                                typeof reserva.numero_asiento === "number"
+                                reserva.asiento_id
                         )
-                        .map((reserva) => reserva.numero_asiento);
+                        .map((reserva) => parseInt(reserva.asiento_id)); // Convertir asiento_id a número
                     setReservedSeats(reservedSeatNumbers);
                 } else {
                     // Si no es un array, inicializar con asientos de ejemplo para pruebas
@@ -232,12 +247,28 @@ export function ConfirmacionReservaScreen() {
         }
     }, [frecuencia]);
 
-    const handleSeatSelect = (seatNumber: number) => {
+    const handleSeatSelect = (seatNumber: number, seatUuid?: string) => {
+        console.log('🪑 Asiento seleccionado:', { numero: seatNumber, uuid: seatUuid });
+        
+        // Si no tenemos UUID, generar uno temporal para testing
+        const finalUuid = seatUuid || `temp-uuid-${seatNumber}-${Date.now()}`;
+        
+        if (!seatUuid) {
+            console.warn('⚠️ No se pudo obtener el UUID del asiento', seatNumber, 'usando UUID temporal:', finalUuid);
+        }
+
         setSelectedSeats((prev) => {
-            if (prev.includes(seatNumber)) {
-                return prev.filter((num) => num !== seatNumber);
+            const existingIndex = prev.findIndex(seat => seat.numero === seatNumber);
+            
+            if (existingIndex >= 0) {
+                // Deseleccionar asiento
+                console.log('🪑 Deseleccionando asiento:', seatNumber);
+                return prev.filter(seat => seat.numero !== seatNumber);
+            } else {
+                // Seleccionar asiento
+                console.log('🪑 Seleccionando asiento:', { numero: seatNumber, uuid: finalUuid });
+                return [...prev, { numero: seatNumber, uuid: finalUuid }];
             }
-            return [...prev, seatNumber];
         });
     };
     if (!frecuencia) {
@@ -283,19 +314,26 @@ export function ConfirmacionReservaScreen() {
                 
                 */}
                 <BusSeats
-                    totalSeats={40}
+                    totalSeats={
+                        frecuencia?.bus?.total_asientos_normales && frecuencia?.bus?.total_asientos_vip
+                            ? frecuencia.bus.total_asientos_normales + frecuencia.bus.total_asientos_vip
+                            : frecuencia?.bus?.asientos?.length || 40
+                    }
                     reservedSeats={reservedSeats}
-                    selectedSeats={selectedSeats}
+                    selectedSeats={selectedSeats.map(seat => seat.numero)}
                     onSeatSelect={handleSeatSelect}
+                    estructuraBus={frecuencia?.bus?.id_estructura_bus}
+                    busAsientos={frecuencia?.bus?.asientos}
                 />                {selectedSeats.length > 0 && (
                     <TouchableOpacity
                         style={styles.continueButton}
                         onPress={() => {
+                            console.log('🎯 Navegando a payment con asientos:', selectedSeats);
                             router.push({
                                 pathname: "/payment",
                                 params: {
                                     frecuencia: JSON.stringify(frecuencia),
-                                    asientos: JSON.stringify(selectedSeats),
+                                    asientos: JSON.stringify(selectedSeats), // Ahora incluye UUIDs
                                 },
                             });
                         }}
