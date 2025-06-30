@@ -58,7 +58,16 @@ const InfoModal = ({
                             <View style={styles.infoRow}>
                                 <Text style={styles.infoLabel}>Fecha</Text>
                                 <Text style={styles.infoValue}>
-                                    {frecuencia?.fecha_creacion || "N/A"}
+                                    {frecuencia?.fecha_creacion
+                                        ? new Date(frecuencia.fecha_creacion).toLocaleDateString(
+                                              "es-EC",
+                                              {
+                                                  day: "2-digit",
+                                                  month: "2-digit",
+                                                  year: "numeric",
+                                              }
+                                          )
+                                        : "N/A"}
                                 </Text>
                             </View>
                             <View style={styles.infoRow}>
@@ -73,7 +82,11 @@ const InfoModal = ({
                             <View style={styles.priceCard}>
                                 <View style={styles.priceRow}>
                                     <Text style={styles.priceLabel}>Precio por asiento</Text>
-                                    <Text style={styles.priceValue}>COP 170.000</Text>
+                                    <Text style={styles.priceValue}>
+                                        {frecuencia?.total
+                                            ? `USD ${frecuencia.total.toFixed(2)}`
+                                            : "Precio no disponible"}
+                                    </Text>
                                 </View>
                             </View>
                             <Text style={styles.servicesTitle}>Servicios incluidos:</Text>
@@ -122,17 +135,30 @@ const InfoModal = ({
                                 </View>
                                 <View style={styles.tableRow}>
                                     <Text style={styles.tableCell}>1 hora(s) antes del viaje</Text>
-                                    <Text style={styles.tableCell}>136000 COP</Text>
+                                    <Text style={styles.tableCell}>
+                                        {frecuencia?.total
+                                            ? `${(frecuencia.total * 0.8).toFixed(2)} USD`
+                                            : "No disponible"}
+                                    </Text>
                                 </View>
                             </View>
                             <Text style={styles.policyNote}>
                                 Los cargos de cancelación se calculan en función de la fecha de
-                                inicio del servicio: 18-04-2025 13:00
+                                inicio del servicio:
+                                {frecuencia?.fecha_creacion
+                                    ? new Date(frecuencia.fecha_creacion).toLocaleDateString(
+                                          "es-EC"
+                                      )
+                                    : "Fecha no disponible"}
+                                {frecuencia?.hora_salida || "Hora no disponible"}
                             </Text>
                             <Text style={styles.policyNote}>
                                 Los gastos de cancelación se calculan por asiento. La tarifa de
                                 cancelación anterior se calcula en función de la tarifa por asiento
-                                de 170000.000000
+                                de
+                                {frecuencia?.total
+                                    ? `${frecuencia.total.toFixed(2)} USD`
+                                    : "precio no disponible"}
                             </Text>
                             <Text style={styles.policyNote}>
                                 El ticket no puede cancelarse después de la hora de salida
@@ -197,17 +223,18 @@ export function ConfirmacionReservaScreen() {
 
     const frecuencia = React.useMemo(() => {
         if (!params.frecuencia) return null;
-        const freq = typeof params.frecuencia === "string"
-            ? JSON.parse(params.frecuencia)
-            : params.frecuencia;
-        
+        const freq =
+            typeof params.frecuencia === "string"
+                ? JSON.parse(params.frecuencia)
+                : params.frecuencia;
+
         // Log para debugging de la estructura del bus
-        console.log('🚌 Frecuencia completa:', freq);
-        console.log('🚌 Bus info:', freq?.bus);
-        console.log('🚌 Estructura bus:', freq?.bus?.id_estructura_bus);
-        console.log('🚌 Total asientos normales:', freq?.bus?.total_asientos_normales);
-        console.log('🚌 Total asientos VIP:', freq?.bus?.total_asientos_vip);
-        
+        console.log("🚌 Frecuencia completa:", freq);
+        console.log("🚌 Bus info:", freq?.bus);
+        console.log("🚌 Estructura bus:", freq?.bus?.id_estructura_bus);
+        console.log("🚌 Total asientos normales:", freq?.bus?.total_asientos_normales);
+        console.log("🚌 Total asientos VIP:", freq?.bus?.total_asientos_vip);
+
         return freq;
     }, [params.frecuencia]);
     useEffect(() => {
@@ -248,25 +275,30 @@ export function ConfirmacionReservaScreen() {
     }, [frecuencia]);
 
     const handleSeatSelect = (seatNumber: number, seatUuid?: string) => {
-        console.log('🪑 Asiento seleccionado:', { numero: seatNumber, uuid: seatUuid });
-        
+        console.log("🪑 Asiento seleccionado:", { numero: seatNumber, uuid: seatUuid });
+
         // Si no tenemos UUID, generar uno temporal para testing
         const finalUuid = seatUuid || `temp-uuid-${seatNumber}-${Date.now()}`;
-        
+
         if (!seatUuid) {
-            console.warn('⚠️ No se pudo obtener el UUID del asiento', seatNumber, 'usando UUID temporal:', finalUuid);
+            console.warn(
+                "⚠️ No se pudo obtener el UUID del asiento",
+                seatNumber,
+                "usando UUID temporal:",
+                finalUuid
+            );
         }
 
         setSelectedSeats((prev) => {
-            const existingIndex = prev.findIndex(seat => seat.numero === seatNumber);
-            
+            const existingIndex = prev.findIndex((seat) => seat.numero === seatNumber);
+
             if (existingIndex >= 0) {
                 // Deseleccionar asiento
-                console.log('🪑 Deseleccionando asiento:', seatNumber);
-                return prev.filter(seat => seat.numero !== seatNumber);
+                console.log("🪑 Deseleccionando asiento:", seatNumber);
+                return prev.filter((seat) => seat.numero !== seatNumber);
             } else {
                 // Seleccionar asiento
-                console.log('🪑 Seleccionando asiento:', { numero: seatNumber, uuid: finalUuid });
+                console.log("🪑 Seleccionando asiento:", { numero: seatNumber, uuid: finalUuid });
                 return [...prev, { numero: seatNumber, uuid: finalUuid }];
             }
         });
@@ -289,7 +321,6 @@ export function ConfirmacionReservaScreen() {
                     <Ionicons name="arrow-back" size={24} color="black" />
                     <Text style={styles.backButtonText}>Volver</Text>
                 </TouchableOpacity>
-
                 <Text style={styles.title}>Selección de asientos</Text>
                 <Text style={styles.routeText}>
                     {frecuencia?.origen} → {frecuencia?.destino}
@@ -315,20 +346,24 @@ export function ConfirmacionReservaScreen() {
                 */}
                 <BusSeats
                     totalSeats={
-                        frecuencia?.bus?.total_asientos_normales && frecuencia?.bus?.total_asientos_vip
-                            ? frecuencia.bus.total_asientos_normales + frecuencia.bus.total_asientos_vip
+                        frecuencia?.bus?.total_asientos_normales &&
+                        frecuencia?.bus?.total_asientos_vip
+                            ? frecuencia.bus.total_asientos_normales +
+                              frecuencia.bus.total_asientos_vip
                             : frecuencia?.bus?.asientos?.length || 40
                     }
                     reservedSeats={reservedSeats}
-                    selectedSeats={selectedSeats.map(seat => seat.numero)}
+                    selectedSeats={selectedSeats.map((seat) => seat.numero)}
                     onSeatSelect={handleSeatSelect}
                     estructuraBus={frecuencia?.bus?.id_estructura_bus}
                     busAsientos={frecuencia?.bus?.asientos}
-                />                {selectedSeats.length > 0 && (
+                    precio={frecuencia?.total}
+                />
+                {selectedSeats.length > 0 && (
                     <TouchableOpacity
                         style={styles.continueButton}
                         onPress={() => {
-                            console.log('🎯 Navegando a payment con asientos:', selectedSeats);
+                            console.log("🎯 Navegando a payment con asientos:", selectedSeats);
                             router.push({
                                 pathname: "/payment",
                                 params: {

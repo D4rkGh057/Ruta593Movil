@@ -34,6 +34,7 @@ interface BusSeatsProps {
     onSeatSelect: (seatNumber: number, seatUuid?: string) => void; // Actualizado para incluir UUID
     estructuraBus?: EstructuraBus; // Estructura del bus opcional
     busAsientos?: any[]; // Asientos del bus con sus UUIDs
+    precio?: number; // Precio del viaje
 }
 
 export const BusSeats: React.FC<BusSeatsProps> = ({
@@ -43,6 +44,7 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
     onSeatSelect,
     estructuraBus,
     busAsientos,
+    precio,
 }) => {
     // Obtener la distribución del bus
     const distribucion: DistribucionBus = React.useMemo(() => {
@@ -160,7 +162,9 @@ export const BusSeats: React.FC<BusSeatsProps> = ({
                         />
                         <View>
                             <Text style={styles.legendItemTitle}>Disponible</Text>
-                            <Text style={styles.legendItemPrice}>COP 170.000.00</Text>
+                            <Text style={styles.legendItemPrice}>
+                                {precio ? `USD ${precio.toFixed(2)}` : 'Precio no disponible'}
+                            </Text>
                         </View>
                     </View>
                     <View style={styles.legendItem}>
