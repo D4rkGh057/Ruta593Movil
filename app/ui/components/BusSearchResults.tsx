@@ -25,7 +25,8 @@ const BusCard: React.FC<BusSearchResultProps> = ({ frecuencia, onSelect, coopera
     const busImageUrl = `https://picsum.photos/200/200?random=${frecuencia.frecuencia_id || 1}`;
     // Logo de la compañía (usando el logo de la cooperativa o una imagen de respaldo)
     const companyLogoUrl =
-        cooperativa?.logo || `https://picsum.photos/100/100?random=${(frecuencia.frecuencia_id || 1) + 1}`;
+        cooperativa?.logo ||
+        `https://picsum.photos/100/100?random=${(frecuencia.frecuencia_id || 1) + 1}`;
 
     return (
         <TouchableOpacity
@@ -366,7 +367,8 @@ const BusSearchResults: React.FC<BusSearchResultsProps> = ({ frecuencias, onSele
                                                             prev.cooperativaId ===
                                                             cooperativa.cooperativa_id
                                                                 ? null
-                                                                : cooperativa.cooperativa_id,
+                                                                : cooperativa.cooperativa_id ??
+                                                                  null,
                                                     }))
                                                 }
                                             >
