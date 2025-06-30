@@ -52,9 +52,6 @@ export default function PaymentScreen() {
 
     const totalAmount = frecuencia ? frecuencia.total * selectedSeats.length : 0;
 
-    // NOTA: Todas las validaciones de datos han sido eliminadas ya que 
-    // el sistema garantiza que la identificación quemada '1804109096' siempre esté disponible
-
     const handlePayWithPayPal = async () => {
         if (!frecuencia || !user) {
             Alert.alert('Error', 'Datos de usuario o frecuencia no disponibles');
@@ -67,9 +64,13 @@ export default function PaymentScreen() {
             return;
         }
 
-        // La identificación '1804109096' está quemada y siempre disponible
-        const validIdentificacion = getUserIdentificacion() || '1804109096';
-        console.log('🆔 Identificación para pago:', validIdentificacion || '1804109096 (quemada)');
+        // Obtener identificación desde el store de Zustand
+        const validIdentificacion = getUserIdentificacion();
+        if (!validIdentificacion) {
+            Alert.alert('Error', 'No se pudo obtener la identificación del usuario. Por favor inicia sesión nuevamente.');
+            return;
+        }
+        console.log('🆔 Identificación para pago desde store:', validIdentificacion);
         
         console.log('🔍 STEP 1: Preparando datos de reserva...');
         console.log('  - userId:', userId);
@@ -83,14 +84,14 @@ export default function PaymentScreen() {
             
             const reservaData: ReservaPaymentData = {
                 usuarioId: userId,
-                frecuenciaId: frecuencia.frecuencia_id!.toString(), // Convertir a string
-                asientos: selectedSeats, // Ahora ya incluye objetos con numero y uuid
-                fechaViaje: new Date().toISOString(), // Fecha completa en formato ISO
+                frecuenciaId: frecuencia.frecuencia_id!.toString(),
+                asientos: selectedSeats,
+                fechaViaje: new Date().toISOString(),
                 horaViaje: frecuencia.hora_salida,
                 precio: frecuencia.total,
                 destino: frecuencia.destino,
                 nombrePasajero: getUserName(),
-                identificacionPasajero: validIdentificacion || '1804109096' // Usar identificación o fallback directo
+                identificacionPasajero: validIdentificacion
             };
 
             console.log('🔍 STEP 2: Datos de reserva construidos:');
@@ -167,10 +168,10 @@ export default function PaymentScreen() {
             
             // Extraer parámetros de la URL de PayPal
             const urlObj = new URL(url);
-            let paymentId = urlObj.searchParams.get('paymentId') || 
-                           urlObj.searchParams.get('token') ||
+            let paymentId = urlObj.searchParams.get('paymentId') ??
+                           urlObj.searchParams.get('token') ??
                            urlObj.searchParams.get('payment_id');
-            const payerId = urlObj.searchParams.get('PayerID') || urlObj.searchParams.get('payer_id');
+            const payerId = urlObj.searchParams.get('PayerID') ?? urlObj.searchParams.get('payer_id');
 
             console.log('🔍 PaymentScreen.handlePaymentSuccess - Parámetros extraídos:');
             console.log('  - paymentId:', paymentId);
@@ -196,7 +197,7 @@ export default function PaymentScreen() {
             // Procesar el pago aprobado
             const result = await ReservaPaymentService.processApprovedPayment(
                 paymentId,
-                payerId || '',
+                payerId ?? '',
                 reservaData
             );
 
@@ -222,7 +223,7 @@ export default function PaymentScreen() {
                 );
             } else {
                 console.error('🔍 PaymentScreen.handlePaymentSuccess - ERROR: result.success = false');
-                throw new Error(result.error || 'Error procesando el pago');
+                throw new Error(result.error ?? 'Error procesando el pago');
             }
         } catch (error) {
             console.error('🔍 PaymentScreen.handlePaymentSuccess - CATCH ERROR:', error);
@@ -306,7 +307,7 @@ export default function PaymentScreen() {
                     
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Identificación:</Text>
-                        <Text style={styles.summaryValue}>{getUserIdentificacion() || 'No disponible'}</Text>
+                        <Text style={styles.summaryValue}>{getUserIdentificacion() ?? 'No disponible'}</Text>
                     </View>
                 </View>
 
