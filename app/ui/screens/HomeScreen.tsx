@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -21,13 +21,13 @@ import { Frecuencia } from "../../core/domain/Frecuencia";
 import { Parada } from "../../core/domain/Parada";
 import { FrecuenciaService } from "../../core/infrastructure/FrecuenciaService";
 import { ParadaService } from "../../core/infrastructure/ParadaService";
-import { NOVEDADES_MOCK, OFERTAS_MOCK } from "../../data/mockData";
+import { useDescuentos } from "../../hooks/useDescuentos";
 import BusSearchResults from "../components/BusSearchResults";
-import { NovedadCard } from "../components/NovedadCard";
 import { OfertaCard } from "../components/OfertaCard";
 
 export default function HomeScreen() {
     const router = useRouter();
+    const navigation = useNavigation();
     const insets = useSafeAreaInsets();
     const [origen, setOrigen] = useState("Seleccionar origen");
     const [destino, setDestino] = useState("Seleccionar destino");
@@ -42,6 +42,22 @@ export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [seleccionActual, setSeleccionActual] = useState<"origen" | "destino">("origen");
     const [mostrarResultados, setMostrarResultados] = useState(false);
+
+    // Hook para descuentos/ofertas
+    const { descuentos, loading: loadingDescuentos, error: errorDescuentos } = useDescuentos(true);
+
+    // Función para verificar si un descuento está vigente
+    const isDescuentoVigente = (descuento: any): boolean => {
+        if (!descuento.activo) return false;
+        
+        const fechaActual = new Date();
+        const fechaCaducidad = new Date(descuento.vida_util);
+        
+        return fechaActual <= fechaCaducidad;
+    };
+
+    // Filtrar solo descuentos activos y vigentes para mostrar como ofertas
+    const ofertasActivas = descuentos.filter(isDescuentoVigente).slice(0, 5); // Limitar a 5 ofertas
 
     useEffect(() => {
         cargarParadas();
@@ -500,51 +516,51 @@ export default function HomeScreen() {
                         )}
                     </TouchableOpacity>
 
-                    {/* Sección Novedades */}
-                    <View className="mb-6">
-                        <Text className="text-2xl font-bold mb-4">Novedades</Text>
-                        {NOVEDADES_MOCK.map((novedad) => (
-                            <NovedadCard
-                                key={novedad.id}
-                                title={novedad.title}
-                                subtitle={novedad.subtitle}
-                                image={novedad.image}
-                                onPress={() =>
-                                    Alert.alert("Novedad", "Más información próximamente")
-                                }
-                            />
-                        ))}
-                    </View>
-
                     {/* Sección Ofertas */}
                     <View>
                         <View className="flex-row justify-between items-center mb-4">
                             <Text className="text-2xl font-bold">Ofertas</Text>
                             <TouchableOpacity
-                                onPress={() => Alert.alert("Ofertas", "Ver todas las ofertas")}
+                                onPress={() => (navigation as any).navigate("Ofertas")}
                             >
                                 <Text className="text-blue-600">Ver todo</Text>
                             </TouchableOpacity>
                         </View>
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            className="mb-6"
-                        >
-                            {OFERTAS_MOCK.map((oferta) => (
-                                <OfertaCard
-                                    key={oferta.id}
-                                    title={oferta.title}
-                                    validUntil={oferta.validUntil}
-                                    image={oferta.image}
-                                    tag={oferta.tag}
-                                    type={oferta.type}
-                                    onPress={() =>
-                                        Alert.alert("Oferta", "Más detalles próximamente")
-                                    }
-                                />
-                            ))}
-                        </ScrollView>
+                        
+                        {loadingDescuentos ? (
+                            <View className="flex-row justify-center py-8">
+                                <ActivityIndicator size="large" color="#000" />
+                                <Text className="ml-2 text-gray-600">Cargando ofertas...</Text>
+                            </View>
+                        ) : errorDescuentos ? (
+                            <View className="bg-red-100 border border-red-400 p-4 rounded-lg mb-6">
+                                <Text className="text-red-700 text-center">
+                                    Error al cargar ofertas: {errorDescuentos}
+                                </Text>
+                            </View>
+                        ) : ofertasActivas.length > 0 ? (
+                            <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                className="mb-6"
+                            >
+                                {ofertasActivas.map((oferta) => (
+                                    <OfertaCard
+                                        key={oferta.descuento_id}
+                                        descuento={oferta}
+                                        onPress={() =>
+                                            Alert.alert("Oferta", `Código: ${oferta.codigo_promocional}\n\n${oferta.mensaje}`)
+                                        }
+                                    />
+                                ))}
+                            </ScrollView>
+                        ) : (
+                            <View className="bg-gray-100 p-4 rounded-lg mb-6">
+                                <Text className="text-gray-600 text-center">
+                                    No hay ofertas disponibles en este momento
+                                </Text>
+                            </View>
+                        )}
                     </View>
 
                     {/* Sección Visto anteriormente */}

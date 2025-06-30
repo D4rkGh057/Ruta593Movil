@@ -1,3 +1,5 @@
+import { Descuento } from "../core/domain/Descuento";
+
 export const NOVEDADES_MOCK = [
     {
         id: 1,
@@ -13,29 +15,35 @@ export const NOVEDADES_MOCK = [
     },
 ];
 
-export const OFERTAS_MOCK = [
+export const OFERTAS_MOCK: Descuento[] = [
     {
-        id: 1,
-        title: "Quito - Guayaquil 25% OFF",
-        validUntil: "31 may",
-        image: "https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=400&auto=format&fit=crop",
-        tag: "NUEVO",
-        type: "Bus",
+        descuento_id: "1",
+        nombre: "Quito - Guayaquil 25% OFF",
+        porcentaje: 25,
+        vida_util: "31 may",
+        link_descarga: "https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=400&auto=format&fit=crop",
+        codigo_promocional: "QUITO25",
+        mensaje: "¡Descuento especial para la ruta más popular!",
+        activo: true,
     },
     {
-        id: 2,
-        title: "Cuenca - Loja desde $12",
-        validUntil: "15 jun",
-        image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=400&auto=format&fit=crop",
-        tag: "DESTACADO",
-        type: "Bus",
+        descuento_id: "2",
+        nombre: "Cuenca - Loja desde $12",
+        porcentaje: 30,
+        vida_util: "15 jun",
+        link_descarga: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?q=80&w=400&auto=format&fit=crop",
+        codigo_promocional: "CUENCA30",
+        mensaje: "Viaja cómodo y ahorra en esta ruta destacada",
+        activo: true,
     },
     {
-        id: 3,
-        title: "Ambato - Riobamba 2x1",
-        validUntil: "31 dic",
-        image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=400&auto=format&fit=crop",
-        tag: "ESPECIAL",
-        type: "Bus",
+        descuento_id: "3",
+        nombre: "Ambato - Riobamba 2x1",
+        porcentaje: 50,
+        vida_util: "31 dic",
+        link_descarga: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=400&auto=format&fit=crop",
+        codigo_promocional: "AMBATO2X1",
+        mensaje: "¡Oferta especial! Compra un boleto y lleva otro gratis",
+        activo: true,
     },
 ];
