@@ -8,12 +8,15 @@ import {
     ScrollView,
     StyleSheet,
     Text,
+    TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useAuthStore } from '../../adapters/stores/authStore';
+import { Descuento } from '../../core/domain/Descuento';
 import { Frecuencia } from '../../core/domain/Frecuencia';
+import { DescuentoService } from '../../core/infrastructure/DescuentoService';
 import { ReservaPaymentData, ReservaPaymentService } from '../../core/infrastructure/ReservaPaymentService';
 
 // Interfaz para asiento seleccionado con UUID
@@ -29,6 +32,11 @@ export default function PaymentScreen() {
     const [paypalUrl, setPaypalUrl] = useState<string | null>(null);
     const [showWebView, setShowWebView] = useState(false);
     const [processingPayment, setProcessingPayment] = useState(false);
+    
+    // Estados para descuentos
+    const [codigoDescuento, setCodigoDescuento] = useState('');
+    const [descuentoAplicado, setDescuentoAplicado] = useState<Descuento | null>(null);
+    const [validandoDescuento, setValidandoDescuento] = useState(false);
     
     const { user, getUserId, getUserName, getUserIdentificacion } = useAuthStore();
 
@@ -50,7 +58,64 @@ export default function PaymentScreen() {
         return parsed;
     }, [params.asientos]) as AsientoSeleccionado[];
 
-    const totalAmount = frecuencia ? frecuencia.total * selectedSeats.length : 0;
+    // Cálculos de precios (con corrección de precisión decimal)
+    const subtotal = frecuencia ? Math.round((frecuencia.total * selectedSeats.length) * 100) / 100 : 0;
+    const descuentoMonto = descuentoAplicado ? Math.round((subtotal * parseFloat(descuentoAplicado.porcentaje.toString()) / 100) * 100) / 100 : 0;
+    const totalAmount = Math.round((subtotal - descuentoMonto) * 100) / 100;
+
+    // Funciones para manejar descuentos
+    const validarDescuento = async () => {
+        if (!codigoDescuento.trim()) {
+            Alert.alert('Error', 'Por favor ingresa un código de descuento');
+            return;
+        }
+
+        setValidandoDescuento(true);
+        try {
+            // Obtener todos los descuentos y buscar por código
+            const descuentoService = new DescuentoService();
+            const descuentos = await descuentoService.getAllDescuentos();
+            const descuentoEncontrado = descuentos.find(
+                (d: Descuento) => d.codigo_promocional.toLowerCase() === codigoDescuento.toLowerCase()
+            );
+
+            if (!descuentoEncontrado) {
+                Alert.alert('Código inválido', 'El código de descuento no es válido');
+                return;
+            }
+
+            // Verificar si está activo
+            if (!descuentoEncontrado.activo) {
+                Alert.alert('Código inactivo', 'Este código de descuento no está disponible');
+                return;
+            }
+
+            // Verificar si no ha expirado
+            const fechaActual = new Date();
+            const fechaExpiracion = new Date(descuentoEncontrado.vida_util);
+            if (fechaActual > fechaExpiracion) {
+                Alert.alert('Código expirado', 'Este código de descuento ha expirado');
+                return;
+            }
+
+            // Aplicar descuento
+            setDescuentoAplicado(descuentoEncontrado);
+            Alert.alert(
+                '¡Descuento aplicado!',
+                `Se ha aplicado un descuento del ${descuentoEncontrado.porcentaje}%\n\n${descuentoEncontrado.mensaje}`
+            );
+        } catch (error) {
+            console.error('Error validando descuento:', error);
+            Alert.alert('Error', 'Hubo un problema validando el código de descuento');
+        } finally {
+            setValidandoDescuento(false);
+        }
+    };
+
+    const removerDescuento = () => {
+        setDescuentoAplicado(null);
+        setCodigoDescuento('');
+    };
 
     const handlePayWithPayPal = async () => {
         if (!frecuencia || !user) {
@@ -88,10 +153,11 @@ export default function PaymentScreen() {
                 asientos: selectedSeats,
                 fechaViaje: new Date().toISOString(),
                 horaViaje: frecuencia.hora_salida,
-                precio: frecuencia.total,
+                precio: totalAmount, // Usar el precio con descuento aplicado
                 destino: frecuencia.destino,
                 nombrePasajero: getUserName(),
-                identificacionPasajero: validIdentificacion
+                identificacionPasajero: validIdentificacion,
+                codigoDescuento: descuentoAplicado?.codigo_promocional // Agregar código de descuento si existe
             };
 
             console.log('🔍 STEP 2: Datos de reserva construidos:');
@@ -290,6 +356,21 @@ export default function PaymentScreen() {
                     
                     <View style={styles.divider} />
                     
+                    {/* Desglose de precios */}
+                    <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>Subtotal:</Text>
+                        <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+                    </View>
+                    
+                    {descuentoAplicado && (
+                        <View style={styles.summaryRow}>
+                            <Text style={styles.discountLabel}>Descuento ({descuentoAplicado.porcentaje}%):</Text>
+                            <Text style={styles.discountValue}>-${descuentoMonto.toFixed(2)}</Text>
+                        </View>
+                    )}
+                    
+                    <View style={styles.divider} />
+                    
                     <View style={styles.summaryRow}>
                         <Text style={styles.totalLabel}>Total a pagar:</Text>
                         <Text style={styles.totalValue}>${totalAmount.toFixed(2)}</Text>
@@ -309,6 +390,50 @@ export default function PaymentScreen() {
                         <Text style={styles.summaryLabel}>Identificación:</Text>
                         <Text style={styles.summaryValue}>{getUserIdentificacion() ?? 'No disponible'}</Text>
                     </View>
+                </View>
+
+                {/* Sección de descuento */}
+                <View style={styles.discountSection}>
+                    <Text style={styles.cardTitle}>Código de Descuento</Text>
+                    
+                    <TextInput
+                        style={styles.discountInput}
+                        placeholder="Ingresa tu código aquí"
+                        value={codigoDescuento}
+                        onChangeText={setCodigoDescuento}
+                        editable={!validandoDescuento}
+                    />
+                    
+                    <View style={styles.discountButtons}>
+                        <TouchableOpacity
+                            style={styles.applyDiscountButton}
+                            onPress={validarDescuento}
+                            disabled={validandoDescuento}
+                        >
+                            {validandoDescuento ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.applyDiscountButtonText}>Aplicar Descuento</Text>
+                            )}
+                        </TouchableOpacity>
+                        
+                        {descuentoAplicado && (
+                            <TouchableOpacity
+                                style={styles.removeDiscountButton}
+                                onPress={removerDescuento}
+                            >
+                                <Text style={styles.removeDiscountButtonText}>Remover Descuento</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                    
+                    {descuentoAplicado && (
+                        <View style={styles.appliedDiscount}>
+                            <Text style={styles.appliedDiscountText}>
+                                Descuento del {descuentoAplicado.porcentaje}% aplicado
+                            </Text>
+                        </View>
+                    )}
                 </View>
 
                 {/* Botón de pago */}
@@ -454,6 +579,16 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#0066CC',
     },
+    discountLabel: {
+        fontSize: 16,
+        color: '#e74c3c',
+        fontWeight: '500',
+    },
+    discountValue: {
+        fontSize: 16,
+        color: '#e74c3c',
+        fontWeight: 'bold',
+    },
     payButton: {
         backgroundColor: '#0070ba',
         flexDirection: 'row',
@@ -545,6 +680,70 @@ const styles = StyleSheet.create({
     processingSubtext: {
         fontSize: 14,
         color: '#666',
+        textAlign: 'center',
+    },
+    discountSection: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    discountInput: {
+        borderWidth: 1,
+        borderColor: '#0066CC',
+        borderRadius: 8,
+        padding: 12,
+        fontSize: 16,
+        color: '#333',
+        marginBottom: 15,
+    },
+    discountButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    applyDiscountButton: {
+        backgroundColor: '#0070ba',
+        flex: 1,
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    applyDiscountButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    removeDiscountButton: {
+        backgroundColor: '#e74c3c',
+        flex: 1,
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    removeDiscountButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    appliedDiscount: {
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: '#d4edda',
+        borderColor: '#c3e6cb',
+        borderWidth: 1,
+    },
+    appliedDiscountText: {
+        color: '#155724',
+        fontSize: 16,
+        fontWeight: '500',
         textAlign: 'center',
     },
 });
