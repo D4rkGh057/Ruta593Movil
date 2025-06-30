@@ -17,6 +17,7 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import SessionStorage from "../../adapters/stores/SessionStorage";
 import { Frecuencia } from "../../core/domain/Frecuencia";
 import { Parada } from "../../core/domain/Parada";
 import { FrecuenciaService } from "../../core/infrastructure/FrecuenciaService";
@@ -24,6 +25,16 @@ import { ParadaService } from "../../core/infrastructure/ParadaService";
 import { useDescuentos } from "../../hooks/useDescuentos";
 import BusSearchResults from "../components/BusSearchResults";
 import { OfertaCard } from "../components/OfertaCard";
+
+// Interfaz para búsquedas recientes
+interface BusquedaReciente {
+    id: string;
+    origen: string;
+    destino: string;
+    fecha: string;
+    cantidadResultados: number;
+    fechaBusqueda: string;
+}
 
 export default function HomeScreen() {
     const router = useRouter();
@@ -42,6 +53,7 @@ export default function HomeScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [seleccionActual, setSeleccionActual] = useState<"origen" | "destino">("origen");
     const [mostrarResultados, setMostrarResultados] = useState(false);
+    const [busquedasRecientes, setBusquedasRecientes] = useState<BusquedaReciente[]>([]);
 
     // Hook para descuentos/ofertas
     const { descuentos, loading: loadingDescuentos, error: errorDescuentos } = useDescuentos(true);
@@ -61,7 +73,17 @@ export default function HomeScreen() {
 
     useEffect(() => {
         cargarParadas();
+        cargarBusquedasRecientes();
     }, []);
+
+    const cargarBusquedasRecientes = async () => {
+        try {
+            const busquedas = await SessionStorage.getBusquedasRecientes();
+            setBusquedasRecientes(busquedas);
+        } catch (error) {
+            console.error("Error al cargar búsquedas recientes:", error);
+        }
+    };
     const cargarParadas = async () => {
         try {
             const data = await ParadaService.getAllParadas();
@@ -108,6 +130,10 @@ export default function HomeScreen() {
             setFrecuencias(frecuenciasDisponibles);
 
             if (frecuenciasDisponibles.length === 0) {
+                // Limpiar frecuencias cuando no hay resultados
+                setFrecuencias([]);
+                setMostrarResultados(false);
+                
                 if (Platform.OS === "android") {
                     ToastAndroid.show("No hay buses para esta ruta", ToastAndroid.LONG);
                 } else {
@@ -118,6 +144,14 @@ export default function HomeScreen() {
                     );
                 }
             } else {
+                // Solo mostrar resultados cuando efectivamente hay frecuencias
+                setMostrarResultados(true);
+                
+                // Guardar búsqueda exitosa en localStorage
+                await SessionStorage.saveBusquedaReciente(origen, destino, fechaIda, frecuenciasDisponibles.length);
+                // Recargar búsquedas recientes
+                await cargarBusquedasRecientes();
+                
                 Alert.alert(
                     "Búsqueda exitosa",
                     `Se encontraron ${frecuenciasDisponibles.length} buses disponibles para la ruta ${origen} - ${destino}`,
@@ -266,13 +300,15 @@ export default function HomeScreen() {
         if (!validarBusqueda()) return;
         setCargando(true);
         setError(null);
+        setMostrarResultados(false); // Resetear primero
 
         try {
             await buscarFrecuencias();
-            setMostrarResultados(true);
+            // setMostrarResultados se manejará dentro de buscarFrecuencias
         } catch (error) {
             console.error("Error al buscar buses:", error);
             setError("Error al buscar frecuencias disponibles");
+            setFrecuencias([]); // Limpiar frecuencias en caso de error
             if (Platform.OS === "android") {
                 ToastAndroid.show(
                     error instanceof Error ? error.message : "Error al buscar frecuencias",
@@ -318,7 +354,11 @@ export default function HomeScreen() {
             <SafeAreaView className="flex-1 bg-white">
                 <StatusBar barStyle="dark-content" backgroundColor="white" />
                 <View className="flex-row items-center p-4 border-b border-gray-200">
-                    <TouchableOpacity onPress={() => setMostrarResultados(false)} className="mr-4">
+                    <TouchableOpacity onPress={() => {
+                        setMostrarResultados(false);
+                        setFrecuencias([]); // Limpiar frecuencias al regresar
+                        setError(null); // Limpiar errores
+                    }} className="mr-4">
                         <Ionicons name="arrow-back" size={24} color="black" />
                     </TouchableOpacity>
                     <View>
@@ -565,28 +605,74 @@ export default function HomeScreen() {
 
                     {/* Sección Visto anteriormente */}
                     <View className="mb-6">
-                        <Text className="text-2xl font-bold mb-4">Visto anteriormente</Text>
-                        <View className="bg-white rounded-xl p-4 shadow">
-                            <View className="flex-row items-center mb-2">
-                                <Image
-                                    source={{
-                                        uri: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=64&auto=format&fit=crop",
+                        <View className="flex-row justify-between items-center mb-4">
+                            <Text className="text-2xl font-bold">Visto anteriormente</Text>
+                            {busquedasRecientes.length > 0 && (
+                                <TouchableOpacity 
+                                    onPress={async () => {
+                                        await SessionStorage.clearBusquedasRecientes();
+                                        await cargarBusquedasRecientes();
                                     }}
-                                    className="w-8 h-8 rounded-full"
-                                    resizeMode="cover"
-                                />
-                                <View className="flex-row items-center ml-2">
-                                    <Text className="text-lg">1 bus visto</Text>
-                                </View>
-                            </View>
-                            <View className="flex-row justify-between items-center">
-                                <View>
-                                    <Text className="text-lg font-semibold">Ambato → Quito</Text>
-                                    <Text className="text-gray-600">lun 26 may</Text>
-                                </View>
-                                <Ionicons name="time-outline" size={24} color="#666" />
-                            </View>
+                                    className="px-3 py-1 bg-gray-100 rounded-full"
+                                >
+                                    <Text className="text-gray-600 text-sm">Limpiar</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
+                        {busquedasRecientes.length > 0 ? (
+                            busquedasRecientes.map((busqueda) => (
+                                <View key={busqueda.id} className="bg-white rounded-xl p-4 shadow mb-3">
+                                    <View className="flex-row items-center mb-2">
+                                        <Image
+                                            source={{
+                                                uri: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=64&auto=format&fit=crop",
+                                            }}
+                                            className="w-8 h-8 rounded-full"
+                                            resizeMode="cover"
+                                        />
+                                        <View className="flex-row items-center ml-2">
+                                            <Text className="text-lg">
+                                                {busqueda.cantidadResultados} bus{busqueda.cantidadResultados !== 1 ? 'es' : ''} encontrado{busqueda.cantidadResultados !== 1 ? 's' : ''}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View className="flex-row justify-between items-center">
+                                        <View>
+                                            <Text className="text-lg font-semibold">{busqueda.origen} → {busqueda.destino}</Text>
+                                            <Text className="text-gray-600">
+                                                {new Date(busqueda.fechaBusqueda).toLocaleDateString('es-EC', {
+                                                    weekday: 'short',
+                                                    day: 'numeric',
+                                                    month: 'short'
+                                                })}
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity 
+                                            onPress={() => {
+                                                // Cargar la búsqueda anterior
+                                                setOrigen(busqueda.origen);
+                                                setDestino(busqueda.destino);
+                                                setFechaIda(new Date(busqueda.fecha));
+                                            }}
+                                        >
+                                            <Ionicons name="refresh-outline" size={24} color="#0066CC" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))
+                        ) : (
+                            <View className="bg-white rounded-xl p-4 shadow">
+                                <View className="items-center py-8">
+                                    <Ionicons name="search-outline" size={48} color="#ccc" />
+                                    <Text className="text-gray-500 mt-2 text-center">
+                                        No hay búsquedas recientes
+                                    </Text>
+                                    <Text className="text-gray-400 text-sm text-center mt-1">
+                                        Realiza una búsqueda exitosa para verla aquí
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
                     </View>
                 </View>
 

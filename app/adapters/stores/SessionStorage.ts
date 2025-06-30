@@ -6,6 +6,16 @@ interface SessionData {
     user: User;
 }
 
+// Interfaz para búsquedas recientes
+interface BusquedaReciente {
+    id: string;
+    origen: string;
+    destino: string;
+    fecha: string;
+    cantidadResultados: number;
+    fechaBusqueda: string;
+}
+
 export default class SessionStorage {    static async saveSession(token: string, user?: User): Promise<void> {
         try {
             console.log("Intentando guardar la sesión en AsyncStorage...");
@@ -139,6 +149,72 @@ export default class SessionStorage {    static async saveSession(token: string,
             console.log("✅ Identificación limpiada exitosamente");
         } catch (error) {
             console.error("❌ Error al limpiar la identificación:", error);
+        }
+    }
+
+    // Funciones para manejar búsquedas recientes
+    static async saveBusquedaReciente(origen: string, destino: string, fecha: Date, cantidadResultados: number): Promise<void> {
+        try {
+            console.log("💾 Guardando búsqueda reciente...");
+            
+            const busqueda: BusquedaReciente = {
+                id: Date.now().toString(),
+                origen,
+                destino,
+                fecha: fecha.toISOString(),
+                cantidadResultados,
+                fechaBusqueda: new Date().toISOString()
+            };
+
+            // Obtener búsquedas existentes
+            const busquedasExistentes = await this.getBusquedasRecientes();
+            console.log(`📝 Búsquedas existentes: ${busquedasExistentes.length}`);
+            
+            // Verificar si ya existe una búsqueda similar reciente (mismo origen y destino)
+            const busquedasFiltradas = busquedasExistentes.filter(
+                b => !(b.origen === origen && b.destino === destino)
+            );
+            console.log(`🔍 Después de filtrar duplicados: ${busquedasFiltradas.length}`);
+            
+            // Agregar la nueva búsqueda al inicio
+            const nuevasBusquedas = [busqueda, ...busquedasFiltradas];
+            console.log(`➕ Con nueva búsqueda: ${nuevasBusquedas.length}`);
+            
+            // Mantener solo las últimas 5 búsquedas (eliminar las más antiguas automáticamente)
+            const busquedasLimitadas = nuevasBusquedas.slice(0, 5);
+            console.log(`✂️ Limitadas a 5: ${busquedasLimitadas.length} búsquedas guardadas`);
+            
+            if (nuevasBusquedas.length > 5) {
+                console.log(`🗑️ Se eliminaron ${nuevasBusquedas.length - 5} búsquedas antiguas automáticamente`);
+            }
+            
+            await AsyncStorage.setItem("busquedasRecientes", JSON.stringify(busquedasLimitadas));
+            console.log("✅ Búsqueda reciente guardada:", busqueda);
+        } catch (error) {
+            console.error("❌ Error al guardar búsqueda reciente:", error);
+        }
+    }
+
+    static async getBusquedasRecientes(): Promise<BusquedaReciente[]> {
+        try {
+            console.log("🔍 Recuperando búsquedas recientes...");
+            const busquedasJson = await AsyncStorage.getItem("busquedasRecientes");
+            const busquedas = busquedasJson ? JSON.parse(busquedasJson) : [];
+            console.log("📋 Búsquedas recientes recuperadas:", busquedas.length);
+            return busquedas;
+        } catch (error) {
+            console.error("❌ Error al recuperar búsquedas recientes:", error);
+            return [];
+        }
+    }
+
+    static async clearBusquedasRecientes(): Promise<void> {
+        try {
+            console.log("🗑️ Limpiando búsquedas recientes...");
+            await AsyncStorage.removeItem("busquedasRecientes");
+            console.log("✅ Búsquedas recientes limpiadas");
+        } catch (error) {
+            console.error("❌ Error al limpiar búsquedas recientes:", error);
         }
     }
 }
