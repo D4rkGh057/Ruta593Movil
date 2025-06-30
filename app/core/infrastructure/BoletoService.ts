@@ -1,7 +1,7 @@
 import { API_ENDPOINTS } from "../../../config/api";
 
 export class BoletoService {
-    static async getBoletoById(boletoId: number) {
+    static async getBoletoById(boletoId: string) {
         const response = await fetch(API_ENDPOINTS.BOLETOS.GET_BY_ID(boletoId));
         if (!response.ok) {
             throw new Error(`Error al obtener boleto: ${response.status}`);
@@ -47,7 +47,7 @@ export class BoletoService {
         return response.json();
     }
 
-    static async updateBoleto(boletoId: number, boletoData: any) {
+    static async updateBoleto(boletoId: string, boletoData: any) {
         const response = await fetch(API_ENDPOINTS.BOLETOS.UPDATE(boletoId), {
             method: "PATCH",
             headers: {
@@ -61,7 +61,7 @@ export class BoletoService {
         return response.json();
     }
 
-    static async deleteBoleto(boletoId: number) {
+    static async deleteBoleto(boletoId: string) {
         const response = await fetch(API_ENDPOINTS.BOLETOS.DELETE(boletoId), {
             method: "DELETE",
         });
@@ -71,7 +71,7 @@ export class BoletoService {
         return response.json();
     }
 
-    static async getBoletosByReserva(reservaId: number) {
+    static async getBoletosByReserva(reservaId: string) {
         const response = await fetch(API_ENDPOINTS.BOLETOS.GET_BY_RESERVA(reservaId));
         if (!response.ok) {
             throw new Error(`Error al obtener boletos por reserva: ${response.status}`);
