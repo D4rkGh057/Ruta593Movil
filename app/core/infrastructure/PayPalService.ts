@@ -10,6 +10,12 @@ export const PAYPAL_CONFIG = {
     EMAIL: 'sb-yc1x443727380@business.example.com'
 };
 
+// Validar que las credenciales estén configuradas
+if (!PAYPAL_CONFIG.CLIENT_ID || !PAYPAL_CONFIG.SECRET_KEY) {
+    console.error('🔍 PayPal - ERROR: Credenciales no configuradas');
+    throw new Error('Credenciales de PayPal no configuradas');
+}
+
 interface PayPalPayment {
     amount: number;
     currency: string;
@@ -45,8 +51,15 @@ export class PayPalService {
     private static async getAccessToken(): Promise<string> {
         // Verificar si el token actual aún es válido
         if (this.accessToken && Date.now() < this.tokenExpiry) {
+            console.log('🔍 PayPalService.getAccessToken - Usando token existente');
             return this.accessToken;
-        }        try {
+        }
+        
+        try {
+            console.log('🔍 PayPalService.getAccessToken - Obteniendo nuevo token...');
+            console.log('  - CLIENT_ID:', PAYPAL_CONFIG.CLIENT_ID.substring(0, 10) + '...');
+            console.log('  - API_URL:', PAYPAL_CONFIG.API_URL);
+            
             // Codificar credenciales en base64 (React Native compatible)
             const credentials = btoa(`${PAYPAL_CONFIG.CLIENT_ID}:${PAYPAL_CONFIG.SECRET_KEY}`);
             
@@ -61,16 +74,29 @@ export class PayPalService {
                 body: 'grant_type=client_credentials'
             });
 
+            console.log('🔍 PayPalService.getAccessToken - Respuesta:');
+            console.log('  - response.status:', response.status);
+            console.log('  - response.ok:', response.ok);
+
             if (!response.ok) {
-                throw new Error(`Error al obtener token de PayPal: ${response.status}`);
-            }            const data = await response.json();
+                const errorText = await response.text();
+                console.error('🔍 PayPalService.getAccessToken - ERROR:');
+                console.error('  - response.status:', response.status);
+                console.error('  - errorText:', errorText);
+                throw new Error(`Error al obtener token de PayPal: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            console.log('🔍 PayPalService.getAccessToken - Token obtenido exitosamente');
+            console.log('  - expires_in:', data.expires_in);
+            
             this.accessToken = data.access_token;
             // Configurar expiración con un margen de seguridad de 5 minutos
             this.tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
             
             return this.accessToken!;
         } catch (error) {
-            console.error('Error obteniendo token de PayPal:', error);
+            console.error('🔍 PayPalService.getAccessToken - CATCH ERROR:', error);
             throw new Error('No se pudo conectar con PayPal');
         }
     }
@@ -80,7 +106,11 @@ export class PayPalService {
      */
     static async createOrder(payment: PayPalPayment): Promise<string> {
         try {
+            console.log('🔍 PayPalService.createOrder - INICIO');
+            console.log('  - payment recibido:', JSON.stringify(payment, null, 2));
+            
             const accessToken = await this.getAccessToken();
+            console.log('🔍 PayPalService.createOrder - Token obtenido exitosamente');
             
             const orderRequest: PayPalOrderRequest = {
                 intent: 'CAPTURE',
@@ -99,6 +129,10 @@ export class PayPalService {
                 }
             };
 
+            console.log('🔍 PayPalService.createOrder - Datos que se envían:');
+            console.log('  - orderRequest:', JSON.stringify(orderRequest, null, 2));
+            console.log('  - API URL:', `${PAYPAL_CONFIG.API_URL}/v2/checkout/orders`);
+
             const response = await fetch(`${PAYPAL_CONFIG.API_URL}/v2/checkout/orders`, {
                 method: 'POST',
                 headers: {
@@ -109,10 +143,17 @@ export class PayPalService {
                 body: JSON.stringify(orderRequest)
             });
 
+            console.log('🔍 PayPalService.createOrder - Respuesta PayPal:');
+            console.log('  - response.status:', response.status);
+            console.log('  - response.ok:', response.ok);
+
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                console.error('Error creando orden PayPal:', errorData);
-                throw new Error(`Error al crear orden en PayPal: ${response.status}`);
+                console.error('🔍 PayPalService.createOrder - ERROR DETAILS:');
+                console.error('  - response.status:', response.status);
+                console.error('  - errorData completo:', JSON.stringify(errorData, null, 2));
+                console.error('  - Error creando orden PayPal:', errorData);
+                throw new Error(`Error al crear orden en PayPal: ${response.status} - ${JSON.stringify(errorData)}`);
             }
 
             const orderData = await response.json();
@@ -203,13 +244,13 @@ export class PayPalService {
     static extractPaymentInfo(captureData: any) {
         const capture = captureData.purchase_units?.[0]?.payments?.captures?.[0];
         return {
-            transactionId: capture?.id || captureData.id,
-            amount: parseFloat(capture?.amount?.value || '0'),
-            currency: capture?.amount?.currency_code || 'USD',
-            status: capture?.status || captureData.status,
+            transactionId: capture?.id ?? captureData.id,
+            amount: parseFloat(capture?.amount?.value ?? '0'),
+            currency: capture?.amount?.currency_code ?? 'USD',
+            status: capture?.status ?? captureData.status,
             payerEmail: captureData.payer?.email_address,
-            payerName: `${captureData.payer?.name?.given_name || ''} ${captureData.payer?.name?.surname || ''}`.trim(),
-            completedAt: capture?.create_time || captureData.create_time
+            payerName: `${captureData.payer?.name?.given_name ?? ''} ${captureData.payer?.name?.surname ?? ''}`.trim(),
+            completedAt: capture?.create_time ?? captureData.create_time
         };
     }
 }

@@ -41,17 +41,25 @@ export class ReservaPaymentService {
             const description = `Ruta593 - ${reservaData.destino} - ${reservaData.asientos.length} asiento(s) (${reservaData.asientos.map(a => a.numero).join(', ')})`;
             
             console.log('🔍 ReservaPaymentService - Calculando datos de pago:');
-            console.log('  - totalAmount:', totalAmount);
+            console.log('  - precio por asiento:', reservaData.precio);
+            console.log('  - número de asientos:', reservaData.asientos.length);
+            console.log('  - totalAmount calculado:', totalAmount);
+            console.log('  - totalAmount válido?:', totalAmount > 0);
             console.log('  - description:', description);
             console.log('  - asientos con UUID:', reservaData.asientos);
+            
+            // Validar que el monto sea válido
+            if (!totalAmount || totalAmount <= 0) {
+                throw new Error(`Monto inválido para el pago: ${totalAmount}. Precio: ${reservaData.precio}, Asientos: ${reservaData.asientos.length}`);
+            }
             
             console.log('🔍 ReservaPaymentService - Llamando a PayPalService.createOrder...');
             const paymentUrl = await PayPalService.createOrder({
                 amount: totalAmount,
                 currency: 'USD',
                 description: description,
-                return_url: `home`,
-                cancel_url: `ruta593movil://payment/cancel`
+                return_url: `https://ruta593.com/payment/success`, // URL HTTPS válida para PayPal
+                cancel_url: `https://ruta593.com/payment/cancel`   // URL HTTPS válida para PayPal
             });
             
             console.log('🔍 ReservaPaymentService - PayPal Order creada exitosamente, URL:', paymentUrl);
@@ -122,7 +130,7 @@ export class ReservaPaymentService {
                     hora_viaje: reservaData.horaViaje,
                     precio: reservaData.precio,
                     destino_reserva: reservaData.destino,
-                    codigo_descuento: reservaData.codigoDescuento || undefined
+                    codigo_descuento: reservaData.codigoDescuento ?? undefined
                 };
 
                 console.log(`🔍 STEP 3.${i + 1} DATA: reservaDataItem:`, JSON.stringify(reservaDataItem, null, 2));
@@ -141,7 +149,7 @@ export class ReservaPaymentService {
             comprobanteData.append('usuario_id', reservaData.usuarioId);
             comprobanteData.append('estado', 'aprobado');
             comprobanteData.append('comentarios', 
-                `Pago procesado vía PayPal. TransID: ${paymentInfo.transactionId}. Email: ${paymentInfo.payerEmail || 'N/A'}. Reservas: ${reservas.map(r => r.reserva_id).join(', ')}`
+                `Pago procesado vía PayPal. TransID: ${paymentInfo.transactionId}. Email: ${paymentInfo.payerEmail ?? 'N/A'}. Reservas: ${reservas.map(r => r.reserva_id).join(', ')}`
             );
             
             // URL del recibo de PayPal
@@ -156,7 +164,7 @@ export class ReservaPaymentService {
                 console.log('🔍 STEP 4 SUCCESS: Comprobante de pago creado exitosamente');
             } catch (comprobanteError) {
                 console.warn('🔍 STEP 4 WARNING: Error creando comprobante, pero continuando:', comprobanteError);
-                // No fallar todo el proceso si el comprobante falla
+                // Continuamos sin fallar el proceso principal si el comprobante falla
             }
 
             console.log('🔍 FINAL SUCCESS: Proceso de reserva completado exitosamente');

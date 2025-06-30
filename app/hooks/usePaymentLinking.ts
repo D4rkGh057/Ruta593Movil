@@ -1,11 +1,12 @@
 import * as Linking from 'expo-linking';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { ReservaPaymentService } from '../core/infrastructure/ReservaPaymentService';
 
 export function usePaymentLinking() {
     const router = useRouter();
+    const navigation = useNavigation();
 
     useEffect(() => {
         const handleDeepLink = async (url: string) => {
@@ -69,7 +70,7 @@ export function usePaymentLinking() {
                             [
                                 {
                                     text: 'Ver Boletos',
-                                    onPress: () => router.push('/(tabs)/boletos')
+                                    onPress: () => (navigation as any).navigate("Ofertas")
                                 }
                             ]
                         );

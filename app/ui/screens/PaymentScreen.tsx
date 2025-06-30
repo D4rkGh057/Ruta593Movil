@@ -68,7 +68,7 @@ export default function PaymentScreen() {
         }
 
         // La identificación '1804109096' está quemada y siempre disponible
-        const validIdentificacion = getUserIdentificacion();
+        const validIdentificacion = getUserIdentificacion() || '1804109096';
         console.log('🆔 Identificación para pago:', validIdentificacion || '1804109096 (quemada)');
         
         console.log('🔍 STEP 1: Preparando datos de reserva...');
@@ -120,26 +120,124 @@ export default function PaymentScreen() {
     };    const handleWebViewNavigation = (url: string) => {
         console.log('🔍 PaymentScreen.handleWebViewNavigation - URL navegación:', url);
 
-        // Verificar si es una URL de éxito
-        if (url.includes('payment/success') || url.includes('PayerID') || url.includes('approved')) {
+        // Verificar si es una URL de éxito (tanto la nueva HTTPS como posibles deep links)
+        if (url.includes('payment/success') || 
+            url.includes('PayerID') || 
+            url.includes('approved') ||
+            url.includes('ruta593.com/payment/success')) {
             console.log('🔍 PaymentScreen - Pago detectado como exitoso en WebView');
             console.log('  - Cerrando WebView...');
             setShowWebView(false);
             console.log('  - Activando processingPayment...');
             setProcessingPayment(true);
             
-            console.log('🔍 PaymentScreen - El deep link será manejado por usePaymentLinking');
-            // El deep link será manejado por usePaymentLinking
-            // que procesará el pago automáticamente
+            // Para URLs HTTPS de PayPal, necesitamos extraer manualmente los parámetros
+            if (url.includes('ruta593.com/payment/success') || url.includes('PayerID')) {
+                console.log('🔍 PaymentScreen - Procesando pago exitoso directamente desde WebView');
+                handlePaymentSuccess(url);
+            } else {
+                console.log('🔍 PaymentScreen - El deep link será manejado por usePaymentLinking');
+                // El deep link será manejado por usePaymentLinking
+                // que procesará el pago automáticamente
+            }
         }
         
         // Verificar si es una URL de cancelación  
-        if (url.includes('payment/cancel') || url.includes('cancel') || url.includes('cancelled')) {
+        if (url.includes('payment/cancel') || 
+            url.includes('cancel') || 
+            url.includes('cancelled') ||
+            url.includes('ruta593.com/payment/cancel')) {
             console.log('🔍 PaymentScreen - Pago cancelado en WebView');
             console.log('  - Cerrando WebView...');
             setShowWebView(false);
-            console.log('🔍 PaymentScreen - El deep link de cancelación será manejado por usePaymentLinking');
-            // El deep link será manejado por usePaymentLinking
+            setProcessingPayment(false);
+            
+            Alert.alert(
+                'Pago Cancelado',
+                'Has cancelado el pago. Puedes intentar de nuevo cuando quieras.',
+                [{ text: 'OK', onPress: () => router.push('/') }]
+            );
+        }
+    };
+
+    const handlePaymentSuccess = async (url: string) => {
+        try {
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - INICIO');
+            console.log('  - url:', url);
+            
+            // Extraer parámetros de la URL de PayPal
+            const urlObj = new URL(url);
+            let paymentId = urlObj.searchParams.get('paymentId') || 
+                           urlObj.searchParams.get('token') ||
+                           urlObj.searchParams.get('payment_id');
+            const payerId = urlObj.searchParams.get('PayerID') || urlObj.searchParams.get('payer_id');
+
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - Parámetros extraídos:');
+            console.log('  - paymentId:', paymentId);
+            console.log('  - payerId:', payerId);
+
+            if (!paymentId) {
+                console.error('🔍 PaymentScreen.handlePaymentSuccess - ERROR: ID de pago no encontrado');
+                throw new Error('ID de pago no encontrado en la respuesta de PayPal');
+            }
+
+            // Obtener datos de reserva guardados temporalmente
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - Obteniendo datos de reserva temporales...');
+            const reservaData = await ReservaPaymentService.getTemporaryReservationData();
+            
+            if (!reservaData) {
+                console.error('🔍 PaymentScreen.handlePaymentSuccess - ERROR: Datos de reserva temporales no encontrados');
+                throw new Error('Datos de reserva no encontrados');
+            }
+
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - Datos de reserva recuperados');
+
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - Llamando a processApprovedPayment...');
+            // Procesar el pago aprobado
+            const result = await ReservaPaymentService.processApprovedPayment(
+                paymentId,
+                payerId || '',
+                reservaData
+            );
+
+            console.log('🔍 PaymentScreen.handlePaymentSuccess - Resultado del procesamiento:', result);
+
+            if (result.success) {
+                console.log('🔍 PaymentScreen.handlePaymentSuccess - SUCCESS: Limpiando datos temporales...');
+                // Limpiar datos temporales
+                await ReservaPaymentService.clearTemporaryReservationData();
+                
+                setProcessingPayment(false);
+                
+                // Mostrar mensaje de éxito y navegar a boletos
+                Alert.alert(
+                    '¡Pago Exitoso!',
+                    `Tu reserva ha sido confirmada.\n\nReserva: #${result.reservaId}\nTransacción: ${result.transactionId}\n\nTu boleto se ha generado automáticamente.`,
+                    [
+                        {
+                            text: 'Ver Boletos',
+                            onPress: () => router.push('/(tabs)/boletos')
+                        }
+                    ]
+                );
+            } else {
+                console.error('🔍 PaymentScreen.handlePaymentSuccess - ERROR: result.success = false');
+                throw new Error(result.error || 'Error procesando el pago');
+            }
+        } catch (error) {
+            console.error('🔍 PaymentScreen.handlePaymentSuccess - CATCH ERROR:', error);
+            setProcessingPayment(false);
+            
+            Alert.alert(
+                'Error',
+                `Hubo un problema procesando tu pago: ${error instanceof Error ? error.message : 'Error desconocido'}.\n\nPor favor contacta con soporte si el dinero fue descontado.`,
+                [
+                    {
+                        text: 'Ir a Inicio',
+                        onPress: () => router.push('/')
+                    }
+                ]
+            );
         }
     };
 
